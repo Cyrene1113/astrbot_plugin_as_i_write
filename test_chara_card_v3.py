@@ -20,12 +20,13 @@ def test_character_round_trip_keeps_rpg_fields():
 
 
 def test_world_round_trip_keeps_entries_and_legacy():
-    source = {"content": "总览", "easter_eggs": ["彩蛋"], "entries": [{"id": "fixed", "name": "门", "keys": ["钥匙"], "content": "开启", "enabled": False, "priority": 7, "insertion_order": 3, "insertion_position": "after_history"}]}
+    source = {"content": "总览", "eggs": ["彩蛋"], "entries": [{"id": "fixed", "name": "门", "keys": ["钥匙"], "content": "开启", "enabled": False, "priority": 7, "insertion_order": 3, "insertion_position": "after_history"}]}
     name, restored = world_from_ccv3(world_to_ccv3(source, "世界"))
     entry = next(item for item in restored["entries"] if item["id"] == "fixed")
     assert name == "世界" and restored["content"] == "总览"
     assert (entry["keys"], entry["enabled"], entry["priority"], entry["insertion_position"]) == (["钥匙"], False, 7, "after_history")
-    assert restored["easter_eggs"] == ["彩蛋"]
+    assert restored["eggs"][0]["text"] == "彩蛋"
+    assert "easter_eggs" not in restored
 
 
 def _chunk(kind: bytes, data: bytes) -> bytes:

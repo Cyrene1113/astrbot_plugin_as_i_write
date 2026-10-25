@@ -55,8 +55,11 @@ from .rpg import (
     _render_rpg_sheet,
     _skill_names,
     _validate_attrs,
+    build_group_judgment_context,
+    build_judgment_context,
 )
-from .webui_bridge import AsIWriteWebUIBridge
+from .settle import SETTLE_EXTRACT_PROMPT, apply_settle_result, parse_settle_payload
+from .web_api import AsIWriteWebAPI
 
 
 def _get_character_skills(char: dict) -> tuple[list, list]:
@@ -78,7 +81,7 @@ def _get_character_skills(char: dict) -> tuple[list, list]:
 #  主插件类
 # ════════════════════════════════════════════════
 
-@register(PLUGIN_ID, "昔涟", "📖 如我所书 — 由AI驱动的动态文字冒险游戏", version="1.2.0")
+@register(PLUGIN_ID, "昔涟", "📖 如我所书 — 由AI驱动的动态文字冒险游戏", version="1.3.0")
 class AsIWritePlugin(Star):
     """如我所书 — 翻开书页，故事便开始流淌。"""
 
@@ -99,6 +102,7 @@ class AsIWritePlugin(Star):
         self._worlds_path = DATA_DIR / "worlds.json"
         self._saves_path = DATA_DIR / "saves.json"
         self._logs_path = DATA_DIR / "logs.json"
+        self._endings_path = DATA_DIR / "endings.json"
         self._render_scripts_path = DATA_DIR / "regex_scripts.json"
         render_data = _load_json(self._render_scripts_path)
         self.render_scripts = render_data.get("scripts", []) if isinstance(render_data, dict) else []
@@ -114,6 +118,7 @@ class AsIWritePlugin(Star):
             _save_json(self._worlds_path, self._worlds)
         self._saves: dict = _load_json(self._saves_path)
         self._logs: dict = _load_json(self._logs_path)
+        self._endings: dict = _load_json(self._endings_path)
 
         self._active_single: dict[str, SessionController] = {}
         self._adventures: dict[str, dict] = {}
@@ -124,27 +129,15 @@ class AsIWritePlugin(Star):
         self._kb_helper = None
         self._kb_name = self.config.get("kb_name", "如我所书")
         
-        # ── WebUI 桥接（全新桥接层，无心跳线程）──
-        self._webui_bridge = AsIWriteWebUIBridge(self)
-        self._webui_bridge.register()
+        # ── 官方 Web API（AstrBot register_web_api）──
+        self._web_api = AsIWriteWebAPI(self)
+        self._web_api.register()
 
-        logger.info(f"📖 如我所书 v1.2.0 | 角色卡:{len(self._characters)} 世界观:{len(self._worlds)}")
+        logger.info(f"📖 如我所书 v1.3.0 | 角色卡:{len(self._characters)} 世界观:{len(self._worlds)}")
 
     def _render_story(self, text: str) -> str:
         """只转换发给用户的副本，历史与存档继续保留 LLM 原文。"""
         return apply_render_scripts(text, self.render_scripts, warning_logger=logger)
-
-    def _register_with_base_webui(self, base_registry=None) -> bool:
-        """供基座 WebUI 自愈机制调用，补齐丢失的页面与 API 注册。
-
-        当 ``base_registry`` 传入时，直接使用基座当前的注册表实例，
-        避免因热重载导致的 registry 单例漂移。
-        """
-        bridge = getattr(self, "_webui_bridge", None)
-        if bridge is None:
-            bridge = AsIWriteWebUIBridge(self)
-            self._webui_bridge = bridge
-        return bridge.register(base_registry)
 
     @filter.command_group("冒险")
     def adventure(self):
@@ -187,11 +180,14 @@ class AsIWritePlugin(Star):
             logger.error(f"📖 如我所书 | 知识库·存储: {str(e)}")
 
     def terminate(self):
-        """插件卸载/重载时取消群体定时任务，并移除本插件注册的 Web API 路由。"""
+        """插件卸载/重载时取消群体定时任务、关闭 SSE 订阅并移除本插件的 Web API 路由。"""
         for task in list(self._group_tasks.values()):
             if not task.done():
                 task.cancel()
         self._group_tasks.clear()
+        web_api = getattr(self, "_web_api", None)
+        if web_api is not None:
+            web_api.close()
         apis = getattr(self.context, "registered_web_apis", None)
         if isinstance(apis, list):
             prefix = f"/{PLUGIN_ID}"
@@ -611,12 +607,7 @@ class AsIWritePlugin(Star):
             "created_at": time.time(),
         }, name=name)
         _save_json(self._worlds_path, self._worlds)
-        try:
-            bridge = getattr(self, "_webui_bridge", None)
-            if bridge is not None:
-                bridge._broadcast("worlds_changed", {"name": name, "source": "chat_command"})
-        except Exception:
-            pass
+        self._web_api.notify("worlds_changed", {"name": name, "source": "chat_command"})
         await self._kb_store("world", f"世界观「{name}」：{content}", {"world_name": name})
         yield event.plain_result(f"🌍 世界观「{name}」已投稿！")
 
@@ -715,6 +706,8 @@ class AsIWritePlugin(Star):
                 "created_at": time.time(),
                 "summary": "",
             }
+            if self.enable_dice_judgment and char:
+                game_state["history"].append({"role": "system", "content": build_judgment_context(char)})
             provider = self.context.get_using_provider()
             if not provider:
                 yield event.plain_result("暂无可用 LLM 服务。")
@@ -766,7 +759,7 @@ class AsIWritePlugin(Star):
             if action in ("退出", "结束") or action.startswith("冒险 退出") or action.startswith("/冒险 退出"):
                 self._active_single.pop(e_uid, None)
                 self._adventures.pop(e_uid, None)
-                settle_msg = self._settle_adventure(e_uid, game_state, "exit")
+                settle_msg = await self._settle_adventure(e_uid, game_state, "exit")
                 end_msg = "📖 冒险已结束。期待再次翻开这本书。"
                 if settle_msg:
                     end_msg += f"\n⭐ {settle_msg}"
@@ -775,13 +768,21 @@ class AsIWritePlugin(Star):
                 return
             if action in ("暂停", "存档") or action == "冒险 暂停":
                 self._active_single.pop(e_uid, None)
-                self._settle_adventure(e_uid, game_state, "pause")
+                await self._settle_adventure(e_uid, game_state, "pause")
                 self._save_adventure(e_uid, game_state)
                 await ev.send(MessageChain([Comp.Plain(f"📖 冒险已暂停并保存。\n输入「冒险 继续」可随时回到这个故事♪")]))
                 ctrl.stop()
                 return
             await ev.send(MessageChain([Comp.Plain("故事正在展开...请稍候♪")]))
+            # 判定骰仅对本轮有效：先清掉上一轮的注入块
+            game_state["history"] = [
+                m for m in game_state["history"]
+                if not str(m.get("content", "")).startswith("【本轮判定骰")
+            ]
             game_state["history"].append({"role": "user", "content": action})
+            char_now = self._characters.get(e_uid)
+            if self.enable_dice_judgment and char_now:
+                game_state["history"].append({"role": "system", "content": build_judgment_context(char_now)})
             try:
                 resp = await provider.text_chat(prompt="", session_id=ev.get_session_id(), contexts=game_state["history"])
                 story = resp.completion_text or "前路延伸，等待你的下一个选择。"
@@ -796,10 +797,15 @@ class AsIWritePlugin(Star):
             await ev.send(MessageChain([Comp.Plain(f"📖 **{theme}**\n\n{self._render_story(story)}\n\n**[输入你的行动，或从选项中选择]**")]))
             ctrl.keep(timeout=self.single_timeout, reset_timeout=True)
         await waiter(event)
-        # 超时或退出后的结算
+        # 超时后的自动暂停：结算并保存，可随时「冒险 继续」接上，不丢进度
         if uid in self._active_single:
             self._active_single.pop(uid, None)
-            self._settle_adventure(uid, game_state, "timeout")
+            await self._settle_adventure(uid, game_state, "timeout")
+            self._save_adventure(uid, game_state)
+            try:
+                await event.send(MessageChain([Comp.Plain("⏸️ 你迟迟未行动，冒险已自动暂停并保存。\n输入「冒险 继续」随时回到这个故事♪")]))
+            except Exception:
+                pass
         self._adventures.pop(uid, None)
 
     def _save_adventure(self, uid: str, game_state: dict) -> str:
@@ -821,8 +827,8 @@ class AsIWritePlugin(Star):
         _save_json(self._saves_path, self._saves)
         return save_id
 
-    def _settle_adventure(self, uid: str, game_state: dict, exit_type: str = "exit") -> str:
-        """结算冒险：写入日志并标记首次冒险完成。"""
+    async def _settle_adventure(self, uid: str, game_state: dict, exit_type: str = "exit") -> str:
+        """结算冒险：写入日志、标记首次冒险完成，并按配置做结算提取。"""
         char = self._characters.get(uid)
         if not char:
             return ""
@@ -855,9 +861,70 @@ class AsIWritePlugin(Star):
             char["has_adventured"] = True
         char["updated_at"] = time.time()
         _save_json(self._characters_path, self._characters)
-        if exit_type == "exit":
-            return "结算：冒险经历已记录，能力成长将以叙事结果为准。"
-        return ""
+        # 结算提取：属性成长 / 新能力 / 结局卡 / 世界书沉淀（失败静默跳过）
+        notes: list[str] = []
+        ending: dict | None = None
+        if self.enable_settle_extract:
+            notes, ending = await self._extract_settlement(uid, char, game_state)
+            if ending:
+                self._endings[f"{uid}_{log_id}"] = {
+                    "uid": uid,
+                    "log_id": log_id,
+                    "character_name": char.get("name", ""),
+                    "theme": theme,
+                    "world": world,
+                    "ended_at": time.time(),
+                    **ending,
+                }
+                _save_json(self._endings_path, self._endings)
+        base = "结算：冒险经历已记录，能力成长将以叙事结果为准。" if exit_type == "exit" else ""
+        if notes:
+            base = (base + "\n" if base else "") + "📜 " + "；".join(notes)
+        return base
+
+    async def _extract_settlement(self, uid: str, char: dict, game_state: dict) -> tuple[list[str], dict | None]:
+        """结算提取：一次 LLM 调用从冒险经历中产出成长与结局信息。"""
+        provider = self.context.get_using_provider()
+        if not provider:
+            return [], None
+        recent = [m for m in game_state.get("history", []) if m.get("role") != "system"][-20:]
+        experience = "\n".join(
+            f"{m.get('role', '?')}: {str(m.get('content', ''))[:300]}" for m in recent
+        )[:6000]
+        world_name = str(game_state.get("world", "") or "")
+        world = self._worlds.get(world_name) if world_name else None
+        entry_names = [str(e.get("name", "")) for e in (world or {}).get("entries", [])][:50]
+        prompt = (
+            SETTLE_EXTRACT_PROMPT
+            + "\n\n【角色面板】\n" + _render_rpg_sheet(char)
+            + "\n\n【冒险经历】\n" + (experience or "（本轮几乎没有推进）")
+            + "\n\n【结局走向】\n" + (str(game_state.get("summary", "")) or "（未明确）")
+            + "\n\n【世界信息】\n" + (
+                f"世界「{world_name}」已有条目：" + "、".join(n for n in entry_names if n)
+                if world_name else "（无特定世界）"
+            )
+        )
+        try:
+            resp = await provider.text_chat(prompt=prompt, session_id=f"settle_{uid}", contexts=[])
+            result = parse_settle_payload(resp.completion_text or "")
+        except Exception as e:
+            logger.error(f"📖 如我所书 | 结算提取: {str(e)}")
+            return [], None
+        if not result:
+            return [], None
+        entries_before = len((world or {}).get("entries", [])) if world else 0
+        try:
+            changes, ending = apply_settle_result(char, world, result)
+        except Exception as e:
+            logger.error(f"📖 如我所书 | 结算提取·应用: {str(e)}")
+            return [], None
+        if changes:
+            _save_json(self._characters_path, self._characters)
+            self._web_api.notify("characters_changed", {"uid": uid, "source": "settle"})
+        if world is not None and len(world.get("entries", [])) != entries_before:
+            _save_json(self._worlds_path, self._worlds)
+            self._web_api.notify("worlds_changed", {"name": world_name, "source": "settle"})
+        return changes, ending
 
     def _find_user_saves(self, uid: str) -> list[dict]:
         """查找用户的所有存档"""
@@ -973,7 +1040,20 @@ class AsIWritePlugin(Star):
                 p["joined_round"] = session.get("round_id", 0) + 1
         session["round_id"] = int(session.get("round_id", 0)) + 1
         session["status"] = "round_open"
+        # 判定骰仅对本轮有效：先清掉上一轮的注入块
+        session["history"] = [
+            m for m in session["history"]
+            if not str(m.get("content", "")).startswith("【本轮判定骰")
+        ]
         session["history"].append({"role": "user", "content": action})
+        if self.enable_dice_judgment:
+            active_chars = [
+                p.get("character", {})
+                for p in session.get("participants", {}).values()
+                if p.get("status") == "active" and isinstance(p.get("character"), dict)
+            ]
+            if active_chars:
+                session["history"].append({"role": "system", "content": build_group_judgment_context(active_chars)})
         try:
             resp = await provider.text_chat(prompt="", session_id=event.get_session_id(), contexts=session["history"])
             story = resp.completion_text or "雾中的道路向前延伸。\n\nA. 谨慎探索  B. 原地观察  C. 结伴前进"
@@ -1164,7 +1244,7 @@ class AsIWritePlugin(Star):
                 ctrl.stop()
             except Exception:
                 pass
-        settle_msg = self._settle_adventure(uid, game_state, "exit") if game_state else ""
+        settle_msg = await self._settle_adventure(uid, game_state, "exit") if game_state else ""
         msg = "📖 已退出当前冒险。\n故事的大门永远为你敞开♪"
         if settle_msg:
             msg += f"\n⭐ {settle_msg}"
@@ -1296,6 +1376,27 @@ class AsIWritePlugin(Star):
             lines.append(f"     🕐 {t}  |  对话 {l.get('history_length', 0)} 轮")
         if len(user_logs) > 10:
             lines.append(f"     ...还有 {len(user_logs) - 10} 条记录")
+        yield event.plain_result("\n".join(lines))
+
+    @adventure.command("结局")
+    async def view_endings(self, event: AstrMessageEvent):
+        uid = event.get_sender_id()
+        mine = [e for e in self._endings.values() if e.get("uid") == uid]
+        if not mine:
+            yield event.plain_result("🏆 **结局图鉴**\n\n还没有收集到结局呢～完成一段冒险后这里会亮起♪")
+            return
+        mine.sort(key=lambda x: x.get("ended_at", 0), reverse=True)
+        lines = ["🏆 **结局图鉴**", ""]
+        for e in mine[:10]:
+            tags = " ".join(f"#{t}" for t in e.get("tags", [])[:3])
+            t = time.strftime("%m-%d %H:%M", time.localtime(e.get("ended_at", 0)))
+            lines.append(f"  🏅 **{e.get('title', '无名结局')}** {tags}")
+            lines.append(f"     {e.get('summary', '')}")
+            lines.append(f"     🕐 {t}  |  {e.get('theme', '')}")
+        if len(mine) > 10:
+            lines.append(f"     ...还有 {len(mine) - 10} 枚结局")
+        lines.append("")
+        lines.append(f"💡 已收集 {len(mine)} 枚结局，继续书写你的传说吧♪")
         yield event.plain_result("\n".join(lines))
 
     @adventure.command("状态")

@@ -294,3 +294,57 @@ def _forget_skill(char: dict, skill_name: str, skill_type: str) -> tuple:
             target.pop(i)
             return True, f"已遗忘「{skill_name}」"
     return False, f"未找到能力「{skill_name}」"
+
+
+# ── 回合判定骰（插件侧真实随机，避免 LLM 自造随机数） ──
+
+
+def _roll_d20(n: int = 3) -> list[int]:
+    """真实随机掷 n 个 d20（插件侧掷骰，避免 LLM 自造随机数）。"""
+    try:
+        count = max(0, int(n))
+    except (TypeError, ValueError):
+        count = 3
+    return [_random.randint(1, 20) for _ in range(count)]
+
+
+def build_judgment_context(char: dict) -> str:
+    """单人冒险：为本轮生成 GM 内部判定骰注入块。"""
+    if not isinstance(char, dict):
+        char = {}
+    rolls = _roll_d20(3)
+    attr = char.get("attr")
+    a = attr if isinstance(attr, dict) else {}
+    lines = [
+        "【本轮判定骰（仅供 GM 内部使用，不要原样复读本块）】",
+        f"- 真实随机 d20：{'、'.join(str(r) for r in rolls)}（按顺序取用，每个骰值只用一次，仅对当前回合有效）",
+        f"- 判定基准：{char.get('name', '???')} 的倾向：体魄{_trait_band(a.get('str', BASE_ATTR))}、反应{_trait_band(a.get('agi', BASE_ATTR))}、意志{_trait_band(a.get('spr', BASE_ATTR))}",
+        "- 参考映射：1~5 不利（失败/大失败）、6~10 惜败或付出代价、11~15 险胜、16~18 成功、19~20 大成功；再叠加倾向锚点与世界强度差修正。",
+    ]
+    return "\n".join(lines)
+
+
+def build_group_judgment_context(participants: list[dict]) -> str:
+    """群体冒险：为本轮生成判定骰注入块（在场玩家倾向 + 共享骰值）。
+
+    participants 为角色 dict 列表。
+    """
+    if not isinstance(participants, list):
+        participants = []
+    rolls = _roll_d20(3)
+    lines = [
+        "【本轮判定骰（仅供 GM 内部使用，不要原样复读本块）】",
+        f"- 真实随机 d20：{'、'.join(str(r) for r in rolls)}（按顺序取用，每个骰值只用一次，仅对当前回合有效）",
+    ]
+    for char in participants:
+        if not isinstance(char, dict):
+            continue
+        a = char.get("attr", {})
+        if not isinstance(a, dict):
+            a = {}
+        lines.append(
+            f"- {char.get('name', '???')}：体魄{_trait_band(a.get('str', BASE_ATTR))}、"
+            f"反应{_trait_band(a.get('agi', BASE_ATTR))}、意志{_trait_band(a.get('spr', BASE_ATTR))}"
+        )
+    lines.append("- 参考映射：1~5 不利（失败/大失败）、6~10 惜败或付出代价、11~15 险胜、16~18 成功、19~20 大成功；再叠加倾向锚点与世界强度差修正。")
+    return "\n".join(lines)
