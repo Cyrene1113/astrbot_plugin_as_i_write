@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>如我所书 · 管理后台</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#0f0e17;--card:#1a1932;--border:#2d2b55;--text:#e0def4;--dim:#908caa;--accent:#c4a7e7;--accent2:#9ccfd8;--danger:#eb6f92;--good:#3e8fb0;--r:12px}
+.ico{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:6px;background:rgba(196,167,231,0.12);color:var(--accent);font-size:12px;font-weight:700;margin-right:2px}
+.ico-lg{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:8px;background:rgba(196,167,231,0.12);color:var(--accent);font-size:14px;font-weight:700;margin-right:6px;vertical-align:middle}
+.st{display:inline-block;padding:1px 6px;border-radius:4px;background:rgba(144,140,170,0.08);font-size:11px}
+
+body{font-family:-apple-system,"Segoe UI",system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex}
+.sb{width:210px;min-height:100vh;background:var(--card);border-right:1px solid var(--border);padding:20px 0;flex-shrink:0}
+.sb h1{font-size:17px;padding:0 18px 16px;border-bottom:1px solid var(--border);margin-bottom:10px;color:var(--accent)}
+.sb .tab{display:flex;align-items:center;gap:8px;padding:11px 18px;cursor:pointer;color:var(--dim);transition:.2s;border-left:3px solid transparent;font-size:14px}
+.sb .tab:hover{color:var(--text);background:rgba(196,167,231,0.06)}
+.sb .tab.act{color:var(--accent);border-left-color:var(--accent);background:rgba(196,167,231,0.1)}
+.main{flex:1;padding:28px;overflow-y:auto;max-height:100vh}
+.page{display:none}.page.act{display:block}
+h2{font-size:20px;margin-bottom:18px;color:var(--accent)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:14px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:18px;cursor:pointer;transition:.2s}
+.card:hover{border-color:var(--accent);transform:translateY(-2px)}
+.card h3{font-size:15px;margin-bottom:6px}
+.card p{font-size:13px;color:var(--dim);line-height:1.5;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.badge{display:inline-block;padding:2px 9px;border-radius:20px;font-size:11px;margin:5px 3px 0 0;background:rgba(196,167,231,0.13);color:var(--accent)}
+.btn{display:inline-flex;align-items:center;gap:5px;padding:7px 16px;border:1px solid var(--border);border-radius:8px;background:var(--card);color:var(--text);cursor:pointer;font-size:13px;transition:.2s}
+.btn:hover{border-color:var(--accent)}
+.btn-p{background:var(--accent);color:#0f0e17;border-color:var(--accent)}
+.btn-p:hover{opacity:.85}
+.btn-d{border-color:var(--danger);color:var(--danger)}
+.btn-d:hover{background:rgba(235,111,146,0.1)}
+.btn-sm{padding:4px 10px;font-size:12px}
+.fg{margin-bottom:14px}
+.fg label{display:block;font-size:12px;color:var(--dim);margin-bottom:5px}
+.fg input,.fg textarea,.fg select{width:100%;padding:9px 12px;background:rgba(15,14,23,0.6);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;transition:.2s}
+.fg input:focus,.fg textarea:focus,.fg select:focus{outline:none;border-color:var(--accent)}
+.fg textarea{min-height:70px;resize:vertical;font-family:inherit}
+.fr{display:flex;gap:10px}.fr .fg{flex:1}
+.modalbg{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px);z-index:1000;align-items:center;justify-content:center}
+.modalbg.show{display:flex}
+.modal{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:24px;width:90%;max-width:620px;max-height:80vh;overflow-y:auto}
+.modal h3{font-size:16px;margin-bottom:14px}
+.ma{display:flex;gap:10px;justify-content:flex-end;margin-top:18px}
+.toast{position:fixed;bottom:24px;right:24px;padding:10px 18px;border-radius:8px;background:var(--card);border:1px solid var(--border);color:var(--text);font-size:13px;transform:translateY(100px);opacity:0;transition:.3s;z-index:2000}
+.toast.show{transform:translateY(0);opacity:1}
+.toast.good{border-color:var(--good)}.toast.bad{border-color:var(--danger)}
+.loading{text-align:center;padding:36px;color:var(--dim);font-size:14px}
+.cs{margin-bottom:24px}.cs h3{font-size:14px;color:var(--accent2);margin-bottom:10px;padding-bottom:5px;border-bottom:1px solid var(--border)}
+.sb2{display:inline-block;padding:2px 9px;border-radius:20px;font-size:11px}
+.sb2.go{background:rgba(62,143,176,0.2);color:var(--good)}
+.sb2.pa{background:rgba(196,167,231,0.13);color:var(--accent)}
+
+.rchart{display:flex;justify-content:center;margin:10px 0}
+.rchart canvas{width:200px;height:200px;filter:drop-shadow(0 0 8px rgba(196,167,231,0.3))}
+
+
+.tabs{display:flex;gap:2px;margin-bottom:14px;border-bottom:1px solid var(--border);padding-bottom:0}
+.tabs button{padding:7px 14px;border:1px solid transparent;border-bottom:none;border-radius:6px 6px 0 0;background:transparent;color:var(--dim);cursor:pointer;font-size:12px;transition:.2s}
+.tabs button:hover{color:var(--text)}
+.tabs button.act{background:var(--card);border-color:var(--border);color:var(--accent);margin-bottom:-1px}
+.tc{display:none}.tc.act{display:block}
+.npc-item{display:flex;align-items:center;gap:8px;padding:8px 10px;border:1px solid var(--border);border-radius:8px;margin-bottom:6px}
+.npc-item .kv{flex:1;font-size:12px}
+.npc-item .kv strong{font-size:13px}
+
+</style>
+</head>
+<body>
+
+<div class="sb">
+  <h1>如我所书</h1>
+  <div class="tab act" data-t="worlds"><span class="ico">W</span> 世界观库</div>
+  <div class="tab" data-t="characters"><span class="ico">C</span> 角色卡库</div>
+  <div class="tab" data-t="saves"><span class="ico">S</span> 存档馆</div>
+  <div class="tab" data-t="config"><span class="ico">P</span> 配置</div>
+</div>
+
+<div class="main">
+  <div class="page act" id="p-worlds">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px">
+      <h2><span class="ico-lg">W</span> 世界观库</h2>
+      <div><input id="world-import" type="file" accept="application/json" hidden onchange="importWorldFile(this)"><button class="btn" onclick="document.getElementById('world-import').click()">导入 V3</button> <button class="btn btn-p" onclick="we()">+ 新建</button></div>
+    </div>
+    <div class="grid" id="wl"></div>
+  </div>
+  <div class="page" id="p-characters">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px">
+      <h2><span class="ico-lg">C</span> 角色卡库</h2>
+      <div><span style="font-size:13px;color:var(--dim)" id="cc"></span> <input id="char-import" type="file" accept="application/json,image/png" hidden onchange="importCharacterFile(this)"><button class="btn" onclick="document.getElementById('char-import').click()">导入 JSON/PNG</button></div>
+    </div>
+    <div class="grid" id="cl"></div>
+  </div>
+  <div class="page" id="p-saves">
+    <h2><span class="ico-lg">S</span> 存档馆</h2>
+    <div class="grid" id="sl"></div>
+  </div>
+  <div class="page" id="p-config">
+    <h2><span class="ico-lg">P</span> 配置</h2>
+    <div id="cf"></div>
+  </div>
+</div>
+
+<div class="modalbg" id="mbg"><div class="modal" id="mct"></div></div>
+<div class="toast" id="t"></div>
+
+<script>
+const api=async(u,o={})=>{const path=String(u).replace(/^\/api\/(?=worlds|characters|saves|config|health)/,'/');const origin=(window.parent&&window.parent.location&&window.parent.location.origin?window.parent.location.origin:window.location.origin);const p=window.BASE_API||window.AS_I_WRITE_BASE_API||(origin+'/api/as_i_write');const h={'Content-Type':'application/json',...(o?.headers||{})};const r=await fetch(p+path,{...o,headers:h});const d=await r.json();if(!r.ok)throw new Error(d.error||'失败');return d};
+const tt=(m,t='good')=>{const e=document.getElementById('t');e.textContent=m;e.className='toast '+t;setTimeout(()=>e.classList.add('show'),10);setTimeout(()=>e.classList.remove('show'),2500)};
+const mo=h=>{document.getElementById('mct').innerHTML=h;document.getElementById('mbg').classList.add('show')};
+const mc=()=>document.getElementById('mbg').classList.remove('show');
+const syncFromBaseWebUI=msg=>{if(!msg||msg.plugin!=='as_i_write')return;
+  if(msg.type==='worlds_changed'){lw();lcfg();tt('世界观库已同步')}
+  if(msg.type==='characters_changed'){lc();tt('角色卡库已同步')}
+  if(msg.type==='saves_changed'){ls();tt('存档馆已同步')}
+  if(msg.type==='config_changed'){lcfg();tt('配置已同步')}
+};
+try{if(window.parent)window.parent._onWsMessage=syncFromBaseWebUI}catch(_){ }
+document.getElementById('mbg').onclick=e=>{if(e.target===e.currentTarget)mc()};
+
+function drawRadar(canvas, attrs, charm, luck){
+  const ctx=canvas.getContext('2d'),w=canvas.width=200,h=canvas.height=200,cx=100,cy=100,r=72;
+  const gM={F:0,E:20,D:40,C:60,B:75,A:85,'A+':92,S:100},lb=['力量','敏捷','精神','魅力','幸运'];
+  const raw=[attrs?.str||5,attrs?.agi||5,attrs?.spr||5,gM[charm]||50,gM[luck]||50];
+  function nv(v,i){return i<3?(v>30?0.95+(v-30)/(1000-30)*1.05:v/30*0.95):(v>100?0.95+(v-100)/10*1.05:v/100*0.95)}
+  const vals=raw.map((v,i)=>nv(v,i)),ov=raw.map((v,i)=>i<3?v>30:v>100);
+  const ag=[Math.PI/2,Math.PI/2-2*Math.PI/5,Math.PI/2-4*Math.PI/5,Math.PI/2-6*Math.PI/5,Math.PI/2-8*Math.PI/5];
+  ctx.clearRect(0,0,w,h);
+  // 溢出轴光效
+  for(let i=0;i<5;i++){if(!ov[i])continue;
+    const a=ag[i],ex=cx+vals[i]*r*Math.cos(a),ey=cy-vals[i]*r*Math.sin(a),bx=cx+0.95*r*Math.cos(a),by=cy-0.95*r*Math.sin(a);
+    ctx.save();ctx.shadowColor='rgba(255,215,0,0.5)';ctx.shadowBlur=18;
+    ctx.beginPath();ctx.moveTo(bx,by);ctx.lineTo(ex,ey);
+    ctx.strokeStyle='rgba(255,215,0,0.7)';ctx.lineWidth=3;ctx.stroke();ctx.restore();
+    ctx.beginPath();ctx.arc(ex,ey,5,0,Math.PI*2);
+    ctx.shadowColor='rgba(255,215,0,0.7)';ctx.shadowBlur=20;ctx.fillStyle='#ffd700';ctx.fill();ctx.shadowBlur=0;
+  }
+  // 网格4层
+  for(let k=1;k<=4;k++){ctx.beginPath();const rr=r*k/4;
+    for(let i=0;i<5;i++){const x=cx+rr*Math.cos(ag[i]),y=cy-rr*Math.sin(ag[i]);i?ctx.lineTo(x,y):ctx.moveTo(x,y)}
+    ctx.closePath();ctx.strokeStyle='rgba(45,43,85,0.35)';ctx.lineWidth=1;ctx.stroke();
+  }
+  // 轴线(淡)
+  for(let i=0;i<5;i++){ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(cx+r*Math.cos(ag[i]),cy-r*Math.sin(ag[i]));ctx.strokeStyle='rgba(45,43,85,0.4)';ctx.stroke()}
+  // 数据多边形(普通段)
+  ctx.save();
+  ctx.beginPath();
+  for(let i=0;i<5;i++){const lim=Math.min(vals[i],0.95),x=cx+lim*r*Math.cos(ag[i]),y=cy-lim*r*Math.sin(ag[i]);i?ctx.lineTo(x,y):ctx.moveTo(x,y)}
+  ctx.closePath();
+  let g=ctx.createRadialGradient(cx,cy,0,cx,cy,r);g.addColorStop(0,'rgba(196,167,231,0.45)');g.addColorStop(1,'rgba(156,207,216,0.12)');
+  ctx.fillStyle=g;ctx.fill();ctx.shadowColor='rgba(196,167,231,0.25)';ctx.shadowBlur=8;ctx.strokeStyle='rgba(196,167,231,0.65)';ctx.lineWidth=1.5;ctx.stroke();
+  ctx.restore();
+  // 溢出段
+  for(let i=0;i<5;i++){if(vals[i]<=0.95)continue;
+    const pv=(i+4)%5,nx=(i+1)%5;
+    const b={x:cx+0.95*r*Math.cos(ag[i]),y:cy-0.95*r*Math.sin(ag[i])};
+    const e={x:cx+vals[i]*r*Math.cos(ag[i]),y:cy-vals[i]*r*Math.sin(ag[i])};
+    const lv={x:cx+Math.min(vals[pv],0.95)*r*Math.cos(ag[pv]),y:cy-Math.min(vals[pv],0.95)*r*Math.sin(ag[pv])};
+    const rv={x:cx+Math.min(vals[nx],0.95)*r*Math.cos(ag[nx]),y:cy-Math.min(vals[nx],0.95)*r*Math.sin(ag[nx])};
+    ctx.beginPath();ctx.moveTo(lv.x,lv.y);ctx.lineTo(b.x,b.y);ctx.lineTo(e.x,e.y);ctx.lineTo(rv.x,rv.y);ctx.closePath();
+    ctx.fillStyle='rgba(255,215,0,0.2)';ctx.fill();ctx.strokeStyle='rgba(255,215,0,0.4)';ctx.lineWidth=1;ctx.stroke();
+  }
+  // 数据点
+  for(let i=0;i<5;i++){const x=cx+vals[i]*r*Math.cos(ag[i]),y=cy-vals[i]*r*Math.sin(ag[i]);
+    ctx.beginPath();ctx.arc(x,y,ov[i]?4.5:3,0,Math.PI*2);
+    ctx.fillStyle=ov[i]?'#ffd700':'#c4a7e7';ctx.shadowColor=ov[i]?'rgba(255,215,0,0.5)':'rgba(196,167,231,0.3)';ctx.shadowBlur=ov[i]?12:6;ctx.fill();ctx.shadowBlur=0;
+    ctx.strokeStyle='#0f0e17';ctx.lineWidth=1.5;ctx.stroke();
+  }
+  // 标签系统：沿轴方向堆叠，名称在外侧/数值在内侧
+  // 自动根据角度选择 textAlign 和 textBaseline
+  for(let i=0;i<5;i++){
+    const a=ag[i];
+    // 名称在 r+30（外侧）
+    const nx=cx+(r+30)*Math.cos(a),ny=cy-(r+30)*Math.sin(a);
+    // 数值在 r+16（内侧，靠近数据点）
+    const vx=cx+(r+16)*Math.cos(a),vy=cy-(r+16)*Math.sin(a);
+    // 根据角度自动选择对齐方向
+    const right=nx>cx+5,left=nx<cx-5,top=ny<cy-5,bottom=ny>cy+5;
+    ctx.textBaseline='middle';
+    ctx.font='11px sans-serif';
+    ctx.fillStyle='rgba(144,140,170,0.8)';
+    // 属性名
+    if(right)ctx.textAlign='left';else if(left)ctx.textAlign='right';else ctx.textAlign='center';
+    ctx.fillText(lb[i],nx,ny);
+    // 数值（溢出用金色）
+    ctx.font='bold 13px sans-serif';
+    let d=String(ov[i]?('EX'+raw[i]):(i<3?raw[i]:(i===3?charm:luck)));
+    ctx.fillStyle=ov[i]?'#ffd700':'#c4a7e7';
+    // 数值额外偏移：当名称和数值在同一方向时垂直错开
+    let vOff=0;
+    if(Math.abs(nx-cx)<8)vOff=top?14:-14; // 上下轴：垂直错开
+    else if(Math.abs(ny-cy)<8)vOff=right?-14:14; // 左右轴：水平错开
+    else vOff=-12; // 斜角轴：向轴心方向偏移
+    ctx.fillText(d,vx,vy+vOff);
+    ctx.font='11px sans-serif';
+  }
+}
+function wtab(act){document.querySelectorAll('.tc').forEach(e=>e.classList.remove('act'));document.querySelectorAll('.tabs button').forEach(e=>e.classList.remove('act'));
+  const el=document.getElementById('tc-'+act);if(el)el.classList.add('act');
+  const bt=document.querySelector('.tabs button[data-t="'+act+'"]');if(bt)bt.classList.add('act')}
+
+function wr(){
+  const ov=_wtemp.overview||{},np=_wtemp.npc||[],pl=(_wtemp.plotlines||_wtemp.plot_nodes||[]),cl=_wtemp.clues||[],eg=(_wtemp.eggs||(_wtemp.easter_eggs||[]).map(e=>typeof e==='string'?{text:e,trigger_condition:'',reward:''}:e)),entries=_wtemp.entries||[];
+  const entryHtml=entries.map(e=>'<div class="npc-item"><div class="kv"><strong>'+(e.name||'未命名条目')+'</strong> <span class="badge">'+(e.enabled!==false?'启用':'禁用')+'</span> '+(e.constant?'<span class="badge">常驻</span>':'')+'<br><span style="color:var(--dim)">关键词: '+((e.keys||[]).join(', ')||'无')+' | 优先级 '+(e.priority??10)+' | 顺序 '+(e.insertion_order??100)+' | '+(e.insertion_position||'system')+'</span></div><button class="btn btn-sm" onclick="wentryEdit(\''+e.id+'\')">编辑</button><button class="btn btn-sm btn-d" onclick="wentryDel(\''+e.id+'\')">删除</button></div>').join('');
+  const eggHtml=eg.map((e,i)=>'<div class="npc-item"><div class="kv"><strong>'+(e.text||'')+'</strong><br><span style="color:var(--dim)">触发: '+(e.trigger_condition||'无')+'</span></div><button class="btn btn-sm btn-d" onclick="weggDel('+i+')">×</button></div>').join('');
+  const npcHtml=np.map((n,i)=>{const pts={};if(n.power)pts.v='战力 '+n.power;else if(n.power_tag)pts.v=n.power_tag;const pb=pts.v?' <span class="badge" style="background:rgba(156,207,216,0.15);color:var(--accent2)">'+pts.v+'</span>':'';const tr=(n.traits||[]).length?'<br><span style="color:var(--accent2);font-size:11px">🏷️ '+(n.traits||[]).slice(0,3).join(' · ')+(n.traits.length>3?' …':'')+'</span>':'';const ds=(n.dialog_samples||[]).length?'<br><span style="color:var(--dimmer);font-size:11px">💬 "'+(n.dialog_samples||[])[0].slice(0,30)+'"</span>':'';return '<div class="npc-item"><div class="kv"><strong>'+n.name+'</strong>'+pb+' <span class="badge">'+n.alignment+'</span>'+(n.is_key?' <span class="badge" style="background:rgba(235,111,146,0.2);color:var(--danger)">★关键</span>':'')+'<br><span style="color:var(--dim)">'+n.title+' - '+(n.description||'').slice(0,50)+'</span>'+tr+ds+'</div><button class="btn btn-sm btn-d" onclick="wnpcDel('+i+')">×</button></div>'}).join('');
+  const plotHtml=pl.map((p,i)=>{
+    const sg=(p.stages||[]);
+    const firstStage=sg.length?' <span style="color:var(--dimmer);font-size:11px">→ '+(sg[0].description||sg[0].title||'').slice(0,25)+'</span>':'';
+    return '<div class="npc-item"><div class="kv"><strong>'+p.title+'</strong> <span class="badge">'+p.type+'</span><br><span style="color:var(--dim)">'+(p.summary||'').slice(0,50)+' | '+sg.length+'阶段</span>'+firstStage+'</div><button class="btn btn-sm btn-d" onclick="wplotDel('+i+')">×</button></div>'
+  }).join('');
+  const clueHtml=cl.map((c,i)=>'<div class="npc-item"><div class="kv"><strong>'+c.name+'</strong> <span class="badge">'+c.type+'</span>'+(c.related_npc?.length?' <span class="badge badge-g">👤'+(c.related_npc||[]).join(' · ')+'</span>':'')+'<br><span style="color:var(--dim)">'+(c.content||'').slice(0,55)+'</span>'+(c.unlocks?.length?'<br><span style="color:var(--warn);font-size:11px">🔓 解锁: '+(c.unlocks||[]).join(', ')+'</span>':'')+'</div><button class="btn btn-sm btn-d" onclick="wclueDel('+i+')">×</button></div>').join('');
+  return `<div class="tabs">
+    <button class="act" data-t="basic" onclick="wtab('basic')">基础</button>
+    <button data-t="npc" onclick="wtab('npc')">NPC (${np.length})</button>
+    <button data-t="plot" onclick="wtab('plot')">剧情线 (${pl.length})</button>
+    <button data-t="clue" onclick="wtab('clue')">线索 (${cl.length})</button>
+    <button data-t="loc" onclick="wtab('loc')">地点 (${(_wtemp.locations||[]).length})</button>
+    <button data-t="faction" onclick="wtab('faction')">势力 (${(_wtemp.factions||[]).length})</button>
+    <button data-t="egg" onclick="wtab('egg')">彩蛋 (${eg.length})</button>
+    <button data-t="entry" onclick="wtab('entry')">世界书 (${entries.length})</button>
+  </div>
+  <div id="tc-basic" class="tc act">
+    <div class="fg"><label>名称</label><input id="wn" value="${_wtemp._name||''}" placeholder="标识名"></div>
+    <div class="fg"><label>展示标题</label><input id="wt" value="${ov.title||_wtemp.title||_wtemp._name||''}"></div>
+    <div class="fg"><label>类型</label><input id="wty" value="${ov.type||_wtemp.type||''}"></div>
+    <div class="fg"><label>基础描述</label><textarea id="wd" rows="4">${ov.description||_wtemp.description||_wtemp.content||''}</textarea></div>
+    <div class="fg"><label>标签（逗号分隔）</label><input id="wtag" value="${(ov.tags||_wtemp.tags||[]).join(', ')}"></div>
+    <div class="cs" style="margin-top:14px"><h3>⚖️ 战力设置</h3></div>
+    <div class="fr">
+      <div class="fg"><label>战力档位</label><select id="wptier">
+        <option value=""${(ov.power_tier||_wtemp.power_tier||'')==''?' selected':''}>(未设置)</option>
+        <option value="凡人"${(ov.power_tier||_wtemp.power_tier)=='凡人'?' selected':''}>凡人档（10~50）</option>
+        <option value="超凡"${(ov.power_tier||_wtemp.power_tier)=='超凡'?' selected':''}>超凡档（50~500）</option>
+        <option value="神话"${(ov.power_tier||_wtemp.power_tier)=='神话'?' selected':''}>神话档（500~9999）</option>
+      </select></div>
+      <div class="fg" style="flex:2"></div>
+    </div>
+    <div class="fg"><label>实力等级参考（战力金字塔）</label><textarea id="wpref" rows="5" placeholder="例：
+普通商贩、工匠：战力 10~50
+云骑军士卒：战力 80~150
+军校尉：战力 200~400
+将军级：战力 1500~3000+
+未标注的NPC默认不超过第2档。">${ov.power_reference||_wtemp.power_reference||''}</textarea></div>
+  </div>
+  <div id="tc-entry" class="tc">${entryHtml||'<div style="color:var(--dim);padding:10px">暂无世界书条目</div>'}
+    <div class="cs" style="margin-top:14px"><h3>新建 / 编辑条目</h3></div>
+    <input id="went-id" type="hidden"><div class="fr"><div class="fg"><label>名称</label><input id="went-name"></div><div class="fg"><label>ID（新建可空）</label><input id="went-id-show" disabled></div></div>
+    <div class="fr"><div class="fg"><label>关键词（逗号或换行）</label><textarea id="went-keys"></textarea></div><div class="fg"><label>次级关键词</label><textarea id="went-secondary"></textarea></div></div>
+    <div class="fg"><label>内容</label><textarea id="went-content" rows="5"></textarea></div>
+    <div class="fr"><div class="fg"><label>优先级</label><input id="went-priority" type="number" value="10"></div><div class="fg"><label>插入顺序</label><input id="went-order" type="number" value="100"></div><div class="fg"><label>插入位置</label><select id="went-position"><option>system</option><option>before_char</option><option>after_char</option><option>before_history</option><option>after_history</option></select></div></div>
+    <div class="fr"><label style="font-size:13px"><input id="went-constant" type="checkbox"> 常驻</label><label style="font-size:13px"><input id="went-enabled" type="checkbox" checked> 启用</label></div>
+    <button class="btn btn-sm" onclick="wentryCancel()">取消编辑</button> <button class="btn btn-sm btn-p" onclick="wentrySave()">保存到当前世界</button>
+  </div>
+  <div id="tc-npc" class="tc">${npcHtml}
+    <div class="fr" style="margin-top:8px"><div class="fg"><input id="wnpc-n" placeholder="NPC名字"></div>
+    <div class="fg"><input id="wnpc-t" placeholder="头衔"></div>
+    <div class="fg" style="flex:0.6"><select id="wnpc-a"><option value="友方">友方</option><option value="中立">中立</option><option value="敌方">敌方</option></select></div></div>
+    <div class="fr"><div class="fg" style="flex:1.2"><select id="wnpc-pw" onchange="document.getElementById('wnpc-pv').style.display=this.value==='custom'?'block':'none'"><option value="">战力标签（可选）</option><option value="略强于玩家">略强于玩家</option><option value="势均力敌">势均力敌</option><option value="碾压级">碾压级</option><option value="弱于玩家">弱于玩家</option><option value="custom">自定义数值...</option></select></div>
+    <div class="fg" style="flex:0.8"><input id="wnpc-pv" type="number" placeholder="战力值（如2800）" style="display:none"></div></div>
+    <div class="fr"><div class="fg"><textarea id="wnpc-d" rows="2" placeholder="描述"></textarea></div></div>
+    <div class="fr"><div class="fg"><input id="wnpc-tr" placeholder="性格特质（逗号分隔，如：智将,慵懒,护短）"></div></div>
+    <div class="fr"><div class="fg"><input id="wnpc-ds" placeholder="对话样本（用｜分隔多条）"></div></div>
+    <div class="fr" style="align-items:center"><label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer"><input type="checkbox" id="wnpc-k" style="width:auto"> ★ 标记为关键NPC</label></div>
+    <button class="btn btn-sm" onclick="wnpcAdd()">＋ 添加NPC</button>
+  </div>
+  <div id="tc-plot" class="tc">${plotHtml}
+    <div class="fr" style="margin-top:8px"><div class="fg"><input id="wplt" placeholder="剧情线标题"></div>
+    <div class="fg" style="flex:0.5"><select id="wplty"><option value="主线">主线</option><option value="支线">支线</option><option value="隐藏">隐藏</option></select></div></div>
+    <div class="fg"><textarea id="wpld" rows="2" placeholder="剧情概要"></textarea></div>
+    <div class="fg"><textarea id="wplst" rows="3" placeholder="阶段（每行一个，格式：阶段名｜阶段描述｜关联线索）">${_wtemp._staging||''}</textarea></div>
+    <button class="btn btn-sm" onclick="wplotAdd()">＋ 添加剧情线</button>
+  </div>
+  <div id="tc-clue" class="tc">${clueHtml}
+    <div class="fr" style="margin-top:8px"><div class="fg"><input id="wcln" placeholder="线索名称"></div>
+    <div class="fg" style="flex:0.5"><select id="wclty"><option value="物证">物证</option><option value="证言">证言</option><option value="环境">环境</option><option value="传闻">传闻</option></select></div></div>
+    <div class="fr"><div class="fg"><input id="wcl-npc" placeholder="关联NPC（逗号分隔）"></div>
+    <div class="fg"><input id="wcl-plot" placeholder="解锁剧情线（逗号分隔）"></div></div>
+    <div class="fg"><textarea id="wcld" rows="2" placeholder="线索内容"></textarea></div>
+    <button class="btn btn-sm" onclick="wclueAdd()">＋ 添加线索</button>
+  </div>
+  <div id="tc-egg" class="tc">${eggHtml}
+    <div class="fr" style="margin-top:8px"><div class="fg"><input id="weg-t" placeholder="彩蛋文本"></div>
+    <div class="fg"><input id="weg-c" placeholder="触发条件"></div></div>
+    <button class="btn btn-sm" onclick="weggAdd()">＋ 添加彩蛋</button>
+  </div>
+  <div id="tc-loc" class="tc">${(_wtemp.locations||[]).map((l,i)=>'<div class="npc-item"><div class="kv"><strong>'+l.name+'</strong> <span class="badge badge-g">'+(l.type||'地点')+'</span>'+(l.is_important?' <span class="badge badge-d">★重要</span>':'')+'<br><span style="color:var(--dim)">'+(l.description||'').slice(0,60)+'</span>'+(l.related_npcs?.length?'<br><span style="color:var(--accent2);font-size:11px">👥 '+(l.related_npcs||[]).join(' · ')+'</span>':'')+'</div><button class="btn btn-sm btn-d" onclick="wlocDel('+i+')">×</button></div>').join('')||'<div style="color:var(--dimmer);font-size:13px;padding:10px">暂无地点</div>'}
+    <div class="fr" style="margin-top:8px"><div class="fg"><input id="wloc-n" placeholder="地点名称"></div>
+    <div class="fg" style="flex:0.5"><select id="wloc-ty"><option value="城邦">城邦</option><option value="地标">地标</option><option value="秘境">秘境</option><option value="区域">区域</option></select></div></div>
+    <div class="fr"><div class="fg"><input id="wloc-rn" placeholder="关联NPC（逗号分隔）"></div></div>
+    <div class="fg"><textarea id="wloc-d" rows="2" placeholder="描述"></textarea></div>
+    <div class="fr" style="align-items:center"><label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer"><input type="checkbox" id="wloc-imp" style="width:auto"> ★ 标记为重要地点</label></div>
+    <button class="btn btn-sm" onclick="wlocAdd()">＋ 添加地点</button>
+  </div>
+  <div id="tc-faction" class="tc">${(_wtemp.factions||[]).map((f,i)=>'<div class="npc-item"><div class="kv"><strong>'+f.name+'</strong> <span class="badge">'+(f.alignment||'中立')+'</span><br><span style="color:var(--dim)">'+(f.description||'').slice(0,60)+'</span>'+(f.members?.length?'<br><span style="color:var(--accent2);font-size:11px">👤 '+(f.members||[]).join(' · ')+'</span>':'')+'</div><button class="btn btn-sm btn-d" onclick="wfactionDel('+i+')">×</button></div>').join('')||'<div style="color:var(--dimmer);font-size:13px;padding:10px">暂无势力</div>'}
+    <div class="fr" style="margin-top:8px"><div class="fg"><input id="wf-n" placeholder="势力名称"></div>
+    <div class="fg" style="flex:0.5"><select id="wf-al"><option value="守序">守序</option><option value="中立">中立</option><option value="混乱">混乱</option></select></div></div>
+    <div class="fr"><div class="fg"><input id="wf-mem" placeholder="成员（逗号分隔）"></div></div>
+    <div class="fg"><textarea id="wf-d" rows="2" placeholder="描述"></textarea></div>
+    <div class="fg"><textarea id="wf-rel" rows="2" placeholder="关系（与其他势力的关系描述）"></textarea></div>
+    <button class="btn btn-sm" onclick="wfactionAdd()">＋ 添加势力</button>
+  </div>`}
+
+function we(n){
+  _wsource=n||'';
+  _wtemp={overview:{title:'',type:'',description:'',tags:[]},entries:[],npc:[],plotlines:[],clues:[],eggs:[],locations:[],factions:[]};
+  if(n){
+    mo('<div class="loading" style="padding:40px">加载中...</div>');
+    api('/api/worlds/'+n).then(function(d){
+      _wtemp=d;_wtemp._name=n;
+      mo('<h3>编辑 - '+n+'</h3>'+wr()+'<div class="ma"><button class="btn" onclick="mc()">取消</button><button class="btn btn-p" onclick="sw(&#39;'+n+'&#39;)">保存</button></div>');
+    }).catch(function(e){tt(e.message,'bad')});
+    return;
+  }
+  mo('<h3>新建世界观</h3>'+wr()+'<div class="ma"><button class="btn" onclick="mc()">取消</button><button class="btn btn-p" onclick="sw(&#39;&#39;)">保存</button></div>');
+}function sw(on){const n=document.getElementById('wn').value.trim();if(!n){tt('名称必填','bad');return}
+  const ov=_wtemp.overview||{};ov.title=document.getElementById('wt').value.trim()||n;ov.type=document.getElementById('wty').value.trim();ov.description=document.getElementById('wd').value.trim();ov.tags=document.getElementById('wtag').value.split(',').map(s=>s.trim()).filter(Boolean);
+  ov.power_tier=document.getElementById('wptier').value;
+  ov.power_reference=document.getElementById('wpref').value.trim();
+  _wtemp.overview=ov;
+  (async()=>{try{if(on&&on!==n)await api('/api/worlds/'+encodeURIComponent(on),{method:'DELETE'});await api('/api/worlds/'+encodeURIComponent(n),{method:'PUT',body:JSON.stringify(_wtemp)});tt('已保存');mc();lw()}catch(e){tt(e.message,'bad')}})()}
+
+function _rNPC(){const el=document.querySelector('#tc-npc');if(!el)return;const h=wr();const m=h.match(/<div id="tc-npc" class="tc">(.*?)<div id="tc-plot"/s);el.innerHTML=m?m[1]:'<div style="color:var(--dim);font-size:13px;padding:10px">暂无NPC</div>';}
+function _entryParts(v){return String(v||'').split(/[\n,，、]+/).map(s=>s.trim()).filter(Boolean)}
+function _rerenderWorld(tab='entry'){mo('<h3>'+( _wsource?'编辑 - '+_wsource:'新建世界观')+'</h3>'+wr()+'<div class="ma"><button class="btn" onclick="mc()">取消</button><button class="btn btn-p" onclick="sw(\''+(_wsource||'')+'\')">保存</button></div>');wtab(tab)}
+function wentryEdit(id){const e=(_wtemp.entries||[]).find(x=>x.id===id);if(!e)return;document.getElementById('went-id').value=e.id||'';document.getElementById('went-id-show').value=e.id||'';document.getElementById('went-name').value=e.name||'';document.getElementById('went-keys').value=(e.keys||[]).join('\n');document.getElementById('went-secondary').value=(e.secondary_keys||[]).join('\n');document.getElementById('went-content').value=e.content||'';document.getElementById('went-constant').checked=!!e.constant;document.getElementById('went-enabled').checked=e.enabled!==false;document.getElementById('went-priority').value=Number.isInteger(e.priority)?e.priority:10;document.getElementById('went-order').value=Number.isInteger(e.insertion_order)?e.insertion_order:100;document.getElementById('went-position').value=e.insertion_position||'system'}
+function wentryCancel(){['went-id','went-id-show','went-name','went-keys','went-secondary','went-content'].forEach(id=>document.getElementById(id).value='');document.getElementById('went-constant').checked=false;document.getElementById('went-enabled').checked=true;document.getElementById('went-priority').value=10;document.getElementById('went-order').value=100;document.getElementById('went-position').value='system'}
+function wentrySave(){const name=document.getElementById('went-name').value.trim();if(!name){tt('条目名称必填','bad');return}const id=document.getElementById('went-id').value||crypto.randomUUID().replaceAll('-','');const item={id,name,keys:_entryParts(document.getElementById('went-keys').value),secondary_keys:_entryParts(document.getElementById('went-secondary').value),content:document.getElementById('went-content').value,constant:document.getElementById('went-constant').checked,enabled:document.getElementById('went-enabled').checked,priority:parseInt(document.getElementById('went-priority').value,10)||0,insertion_order:parseInt(document.getElementById('went-order').value,10)||0,insertion_position:document.getElementById('went-position').value};_wtemp.entries=_wtemp.entries||[];const i=_wtemp.entries.findIndex(e=>e.id===id);if(i>=0)_wtemp.entries[i]=item;else _wtemp.entries.push(item);_rerenderWorld();tt('条目已更新，保存世界后写入')}
+function wentryDel(id){if(!confirm('按 ID 删除这个世界书条目？'))return;_wtemp.entries=(_wtemp.entries||[]).filter(e=>e.id!==id);_rerenderWorld();tt('条目已删除，保存世界后生效')}
+function wnpcAdd(){const n=document.getElementById('wnpc-n').value.trim();if(!n){tt('输入NPC名字','bad');return}
+  _wtemp.npc=_wtemp.npc||[];const pt=document.getElementById('wnpc-pw').value;const pv=pt==='custom'?(+document.getElementById('wnpc-pv').value||0):0;
+  const tr=document.getElementById('wnpc-tr').value.trim();
+  const ds=document.getElementById('wnpc-ds').value.trim();
+  _wtemp.npc.push({name:n,title:document.getElementById('wnpc-t').value.trim(),alignment:document.getElementById('wnpc-a').value,description:document.getElementById('wnpc-d').value.trim(),traits:tr?tr.split(',').map(s=>s.trim()).filter(Boolean):[],dialog_samples:ds?ds.split('｜').map(s=>s.trim()).filter(Boolean):[],power_tag:pt==='custom'?'':pt,power:pv,is_key:document.getElementById('wnpc-k').checked});
+  document.getElementById('wnpc-n').value='';document.getElementById('wnpc-t').value='';document.getElementById('wnpc-d').value='';document.getElementById('wnpc-pv').value='';document.getElementById('wnpc-k').checked=false;document.getElementById('wnpc-pw').value='';document.getElementById('wnpc-pv').style.display='none';document.getElementById('wnpc-tr').value='';document.getElementById('wnpc-ds').value='';_rNPC();tt('已添加NPC')}
+function wnpcDel(i){_wtemp.npc=_wtemp.npc||[];_wtemp.npc.splice(i,1);_rNPC();tt('已删除')}
+function wplotAdd(){const t=document.getElementById('wplt').value.trim();if(!t){tt('输入剧情线标题','bad');return}
+  const stText=document.getElementById('wplst').value.trim();
+  const stages=stText?stText.split('\n').filter(Boolean).map(s=>{
+    const parts=s.split('｜');
+    return {title:parts[0].trim(),description:(parts[1]||'').trim(),trigger:'',clues:(parts[2]||'').split(',').map(x=>x.trim()).filter(Boolean),choices:[]};
+  }):[];
+  _wtemp.plotlines=_wtemp.plotlines||[];_wtemp.plotlines.push({title:t,type:document.getElementById('wplty').value,summary:document.getElementById('wpld').value.trim(),stages});
+  document.getElementById('wplt').value='';document.getElementById('wpld').value='';document.getElementById('wplst').value='';tt('已添加剧情线')}
+function wplotDel(i){_wtemp.plotlines=_wtemp.plotlines||[];_wtemp.plotlines.splice(i,1);tt('已删除')}
+function wclueAdd(){const n=document.getElementById('wcln').value.trim();if(!n){tt('输入线索名称','bad');return}
+  _wtemp.clues=_wtemp.clues||[];_wtemp.clues.push({name:n,type:document.getElementById('wclty').value,content:document.getElementById('wcld').value.trim(),related_npc:document.getElementById('wcl-npc')?.value?.trim()?.split(',').map(s=>s.trim()).filter(Boolean)||[],unlocks:document.getElementById('wcl-plot')?.value?.trim()?.split(',').map(s=>s.trim()).filter(Boolean)||[]});
+  document.getElementById('wcln').value='';document.getElementById('wcld').value='';tt('已添加线索')}
+function wclueDel(i){_wtemp.clues=_wtemp.clues||[];_wtemp.clues.splice(i,1);tt('已删除')}
+function weggAdd(){const t=document.getElementById('weg-t').value.trim();if(!t){tt('输入彩蛋文本','bad');return}
+  _wtemp.eggs=_wtemp.eggs||[];_wtemp.eggs.push({text:t,trigger_condition:document.getElementById('weg-c').value.trim()||'',reward:''});
+  document.getElementById('weg-t').value='';document.getElementById('weg-c').value='';tt('已添加彩蛋')}
+function weggDel(i){_wtemp.eggs=_wtemp.eggs||[];_wtemp.eggs.splice(i,1);tt('已删除')}
+function wlocAdd(){const n=document.getElementById('wloc-n').value.trim();if(!n){tt('输入地点名称','bad');return}
+  const rn=document.getElementById('wloc-rn').value.trim();
+  _wtemp.locations=_wtemp.locations||[];_wtemp.locations.push({name:n,type:document.getElementById('wloc-ty').value,description:document.getElementById('wloc-d').value.trim(),related_npcs:rn?rn.split(',').map(s=>s.trim()).filter(Boolean):[],is_important:document.getElementById('wloc-imp').checked});
+  document.getElementById('wloc-n').value='';document.getElementById('wloc-d').value='';document.getElementById('wloc-rn').value='';document.getElementById('wloc-imp').checked=false;tt('已添加地点')}
+function wlocDel(i){_wtemp.locations=_wtemp.locations||[];_wtemp.locations.splice(i,1);tt('已删除')}
+function wfactionAdd(){const n=document.getElementById('wf-n').value.trim();if(!n){tt('输入势力名称','bad');return}
+  const mem=document.getElementById('wf-mem').value.trim();
+  _wtemp.factions=_wtemp.factions||[];_wtemp.factions.push({name:n,alignment:document.getElementById('wf-al').value,description:document.getElementById('wf-d').value.trim(),members:mem?mem.split(',').map(s=>s.trim()).filter(Boolean):[],relations:document.getElementById('wf-rel').value.trim()});
+  document.getElementById('wf-n').value='';document.getElementById('wf-d').value='';document.getElementById('wf-mem').value='';document.getElementById('wf-rel').value='';tt('已添加势力')}
+function wfactionDel(i){_wtemp.factions=_wtemp.factions||[];_wtemp.factions.splice(i,1);tt('已删除')}
+
+async function dw(n){if(!confirm('删除「'+n+'」？'))return;try{await api('/api/worlds/'+encodeURIComponent(n),{method:'DELETE'});tt('已删除');lw()}catch(e){tt(e.message,'bad')}}
+function downloadJson(data,name){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:'application/json'}));a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)}
+async function exportWorld(n){try{downloadJson(await api('/export/world/'+encodeURIComponent(n)),n+'.json')}catch(e){tt(e.message,'bad')}}
+async function importWorldFile(input){const f=input.files[0];if(!f)return;try{const card=JSON.parse(await f.text());const name=prompt('导入世界名称（留空使用卡内名称）','')||'';await api('/import/world',{method:'POST',body:JSON.stringify({card,name})});tt('世界卡已导入');lw()}catch(e){tt(e.message,'bad')}finally{input.value=''}}
+async function importCharacterFile(input){const f=input.files[0];if(!f)return;try{let payload;if(f.type==='image/png'||f.name.toLowerCase().endsWith('.png')){const bytes=new Uint8Array(await f.arrayBuffer());let binary='';bytes.forEach(b=>binary+=String.fromCharCode(b));payload={data_base64:btoa(binary)};const preview=await api('/import/png',{method:'POST',body:JSON.stringify(payload)});if(!confirm('识别到角色「'+(preview.preview?.name||'未命名')+'」，继续选择 UID 写入？'))return;const uid=prompt('写入 UID（不会自动覆盖）','');if(!uid)return;payload.uid=uid;await api('/import/png',{method:'POST',body:JSON.stringify(payload)})}else{const card=JSON.parse(await f.text());const preview=await api('/import/character',{method:'POST',body:JSON.stringify({card})});if(!confirm('识别到角色「'+(preview.preview?.name||'未命名')+'」，继续选择 UID 写入？'))return;const uid=prompt('写入 UID（不会自动覆盖）','');if(!uid)return;await api('/import/character',{method:'POST',body:JSON.stringify({card,uid})})}tt('角色卡已导入');lc()}catch(e){tt(e.message,'bad')}finally{input.value=''}}
+
+async function lw(){const el=document.getElementById('wl');el.innerHTML='<div class="loading">加载中...</div>';
+  try{const d=await api('/api/worlds');const e=Object.entries(d);
+    el.innerHTML=e.map(([n,w])=>{
+      const title=w.overview?.title||n;
+      const desc=(w.overview?.description||w.content||'').slice(0,90);
+      const npcCount=(w.npc||[]).length;
+      const plotCount=(w.plotlines||[]).length;
+      const eggCount=(w.eggs||[]).length;
+      const badge=w.overview?'':' <span class="badge" style="background:rgba(144,140,170,0.2);color:var(--dim)">基础</span>';
+      return `<div class="card" onclick="we('${n}')"><h3>${title}${badge}</h3>
+      ${desc?`<p>${desc}</p>`:'<p style="color:var(--dim)">暂无描述</p>'}
+      <div><span class="badge">${npcCount} NPC</span><span class="badge">${plotCount} 剧情线</span><span class="badge">${eggCount} 彩蛋</span></div>
+      <div style="margin-top:8px"><button class="btn btn-sm" onclick="event.stopPropagation();exportWorld('${n}')">导出 V3</button> <button class="btn btn-sm btn-d" onclick="event.stopPropagation();dw('${n}')">删除</button></div></div>`;
+    }).join('')}
+  catch(e){el.innerHTML='<div class="loading" style="color:var(--danger)">'+e.message+'</div>'}}
+
+async function lc(){const el=document.getElementById('cl');el.innerHTML='<div class="loading">加载中...</div>';
+  try{const d=await api('/api/characters');const e=Object.entries(d);document.getElementById('cc').textContent='共 '+e.length+' 个';
+    el.innerHTML=e.map(([u,c])=>{const a=c.attr||{};return `<div class="card" onclick="ce('${u}')">
+      <h3>${c.name||u}</h3>
+      <p>${(c.description||'').slice(0,60)}</p>
+      <div style="display:flex;gap:6px;margin-top:6px;font-size:12px;color:var(--dim)"><span class="st">ATK ${c.power||0}</span><span class="st">HP ${c.hp||0}</span><span class="st">STR ${a.str||0} AGI ${a.agi||0} SPR ${a.spr||0}</span></div>
+      <div>${c.race?'<span class="badge">'+c.race.name+'</span>':''}${c.job?'<span class="badge">'+c.job.name+'</span>':''}</div></div>`}).join('')}
+  catch(e){el.innerHTML='<div class="loading" style="color:var(--danger)">'+e.message+'</div>'}}
+
+async function ce(u){try{const c=await api('/api/characters/'+encodeURIComponent(u));const a=c.attr||{};
+  const grades='<span style="color:var(--accent)">魅力:'+c.charm+'</span> <span style="color:var(--accent2)">幸运:'+c.luck+'</span>';
+  mo(`<h3><span class="ico-lg">C</span> ${c.name||u}</h3>
+    <div class="rchart"><canvas id="rc${u.replace(/[^a-z0-9]/gi,'')}"></canvas></div>
+    <div style="text-align:center;font-size:11px;color:var(--dim);margin:2px 0">ATK ${c.power||0}  |  HP ${c.hp||0}  |  MP ${c.mp||0}  |  ${grades}</div>
+    <div class="fg"><label>名字</label><input id="cn" value="${c.name||''}"></div>
+    <div class="fg"><label>描述</label><textarea id="cd" rows="2">${c.description||''}</textarea></div>
+    <div class="fr"><div class="fg"><label>力量</label><input id="cs" type="number" value="${a.str||5}"></div>
+    <div class="fg"><label>敏捷</label><input id="ca" type="number" value="${a.agi||5}"></div>
+    <div class="fg"><label>精神</label><input id="csp" type="number" value="${a.spr||5}"></div></div>
+    <div class="ma"><button class="btn" onclick="exportCharacter('${u}')">导出 V3</button><button class="btn" onclick="mc()">取消</button><button class="btn btn-d" onclick="dc('${u}')">删除</button><button class="btn btn-p" onclick="sc('${u}')">保存</button></div>`);
+  setTimeout(()=>{const el=document.getElementById('rc'+u.replace(/[^a-z0-9]/gi,''));if(el)drawRadar(el,c.attr||{},c.charm||'C',c.luck||'C')},100)}
+  catch(e){tt(e.message,'bad')}}
+
+async function exportCharacter(u){try{downloadJson(await api('/export/character/'+encodeURIComponent(u)),u+'.json')}catch(e){tt(e.message,'bad')}}
+async function sc(u){try{const p={name:document.getElementById('cn').value.trim(),description:document.getElementById('cd').value.trim(),attr:{str:+document.getElementById('cs').value||5,agi:+document.getElementById('ca').value||5,spr:+document.getElementById('csp').value||5}};
+  await api('/api/characters/'+encodeURIComponent(u),{method:'PUT',body:JSON.stringify(p)});tt('已保存');mc();lc()}
+  catch(e){tt(e.message,'bad')}}
+
+async function dc(u){if(!confirm('删除角色?'))return;try{await api('/api/characters/'+encodeURIComponent(u),{method:'DELETE'});tt('已删除');mc();lc()}catch(e){tt(e.message,'bad')}}
+
+async function ls(){const el=document.getElementById('sl');el.innerHTML='<div class="loading">加载中...</div>';
+  try{const d=await api('/api/saves');const e=Object.entries(d);
+    if(!e.length){el.innerHTML='<div class="loading">暂无存档</div>';return}
+    el.innerHTML=e.map(([i,s])=>`<div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:start"><h3>${s.theme||'冒险'}</h3><span class="sb2 ${s.status==='active'?'go':'pa'}">${s.status==='active'?'进行中':'已暂停'}</span></div>
+      <p style="font-size:12px;color:var(--dim);margin:4px 0">${(s.summary||s.history?.slice(-1)?.[0]?.content||'').slice(0,70)}</p>
+      <div style="font-size:11px;color:var(--dim);margin-top:6px">${new Date((s.updated_at||s.created_at||0)*1000).toLocaleString()}</div>
+      <div style="margin-top:8px;display:flex;gap:6px"><button class="btn btn-sm" onclick="ld('${i}')">查看</button><button class="btn btn-sm btn-d" onclick="ds('${i}')">删除</button></div></div>`).join('')}
+  catch(e){el.innerHTML='<div class="loading" style="color:var(--danger)">'+e.message+'</div>'}}
+
+async function ld(i){try{const s=await api('/api/saves/'+encodeURIComponent(i));const h=s.history||[];
+  mo(`<h3>${s.theme||'日志'}</h3><div style="max-height:400px;overflow-y:auto;font-size:13px;line-height:1.6">
+    ${h.map(h=>{const r=h.role==='assistant'?'故事':h.role==='user'?'你的行动':'系统';const c=(h.content||'').replace(/\\n/g,'<br>');return `<div style="margin-bottom:6px"><strong>${r}:</strong><br>${c}</div>`}).join('')}</div>
+    <div class="ma"><button class="btn" onclick="mc()">关闭</button></div>`)}
+  catch(e){tt(e.message,'bad')}}
+
+async function ds(i){if(!confirm('删除存档?'))return;try{await api('/api/saves/'+encodeURIComponent(i),{method:'DELETE'});tt('已删除');ls()}catch(e){tt(e.message,'bad')}}
+
+async function lcfg(){const el=document.getElementById('cf');el.innerHTML='<div class="loading">加载中...</div>';
+  try{const c=await api('/api/config');
+    el.innerHTML=`<div class="cs"><h3>冒险设置</h3>
+      <div class="fg"><label>默认世界观</label><select id="c-dw"><option value="">(无)</option>${(c._worldsList||[]).map(w=>'<option value="'+w+'"'+(w===c.default_world?' selected':'')+'>'+w+'</option>').join('')}</select></div>
+      <div class="fr"><div class="fg"><label>单人超时(秒)</label><input id="c-st" type="number" value="${c.single_timeout||300}"></div>
+      <div class="fg"><label>默认主题</label><input id="c-dt" value="${c.default_theme||'奇幻世界'}"></div></div></div>
+      <div class="cs"><h3>角色设置</h3>
+      <div class="fr"><div class="fg"><label>三维上限(和)</label><input id="c-ams" type="number" value="${c.attr_max_sum||30}"></div>
+      <div class="fg"><label>三维下限(单项)</label><input id="c-amn" type="number" value="${c.attr_min||3}"></div>
+      <div class="fg"><label>随机属性上限</label><input id="c-ram" type="number" value="${c.random_attr_max||20}"></div></div></div>
+      <div class="cs"><h3>WebUI</h3>
+      <div class="fr"><div class="fg"><label>端口</label><input id="c-port" type="number" value="${c.webui_port||8765}"></div>
+      <div class="fg"><label>修改密码(可选)</label><input id="c-pw" type="password" value="${c.webui_password||''}"></div></div></div>
+      <button class="btn btn-p" onclick="scfg()">保存配置</button>`}
+  catch(e){el.innerHTML='<div class="loading" style="color:var(--danger)">'+e.message+'</div>'}}
+
+async function scfg(){try{const p={default_world:document.getElementById('c-dw').value,single_timeout:+document.getElementById('c-st').value||300,default_theme:document.getElementById('c-dt').value.trim()||'奇幻世界',attr_max_sum:+document.getElementById('c-ams').value||30,attr_min:+document.getElementById('c-amn').value||3,random_attr_max:+document.getElementById('c-ram').value||20,webui_port:+document.getElementById('c-port').value||8765,webui_password:document.getElementById('c-pw').value};
+  await api('/api/config',{method:'PUT',body:JSON.stringify(p)});tt('配置已保存')}catch(e){tt(e.message,'bad')}}
+
+
+// ── 标签页切换 ──
+document.querySelectorAll('.tab').forEach(t=>{t.onclick=()=>{
+  document.querySelectorAll('.tab').forEach(x=>x.classList.remove('act'));
+  document.querySelectorAll('.page').forEach(x=>x.classList.remove('act'));
+  t.classList.add('act');document.getElementById('p-'+t.dataset.t).classList.add('act')}});
+lw();lc();ls();lcfg();
+</script>
+</body>
+</html>

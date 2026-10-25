@@ -1,0 +1,38 @@
+{
+  "kb_name": {
+    "description": "关联的知识库名称。角色卡和世界观会自动存入此知识库，冒险时也会通过语义检索调取相关内容。",
+    "type": "string",
+    "default": "如我所书",
+    "hint": "在 WebUI 的知识库页面创建同名知识库后使用。默认值「如我所书」已预先注册。"
+  },
+  "default_theme": {
+    "description": "默认的冒险主题，如果用户在开始游戏时未指定，则使用此主题。",
+    "type": "string",
+    "default": "奇幻世界",
+    "hint": "例如：奇幻世界, 赛博朋克城市, 末日废土, 星海深处"
+  },
+  "lore_content_budget": {
+    "description": "单次冒险上下文中世界书条目内容的最大字符数。",
+    "type": "int",
+    "default": 4000,
+    "hint": "建议设置在1000到12000之间；超出预算的低优先级条目会被截断或跳过。"
+  },
+  "single_timeout": {
+    "description": "单人冒险模式每回合的行动超时时间（秒）。超时后冒险将自动结束。",
+    "type": "int",
+    "default": 300,
+    "hint": "建议设置在60到600秒之间。"
+  },
+  "group_round_time": {
+    "description": "群体冒险模式每轮的等待时间（秒）。所有玩家需在此时间内做出选择。",
+    "type": "int",
+    "default": 120,
+    "hint": "建议设置在30到300秒之间。太短会来不及投票，太长则会拖慢节奏。"
+  },
+  "group_max_players": {
+    "description": "群体冒险模式的最大玩家人数上限。达到上限后其他玩家无法加入。",
+    "type": "int",
+    "default": 8,
+    "hint": "建议设置在4到16人之间。人数太多时每个人的参与感会降低。"
+  }
+}

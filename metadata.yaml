@@ -1,0 +1,6 @@
+name: astrbot_plugin_as_i_write
+desc: 📖 如我所书 — 昔涟的文字冒险游戏插件
+help: 翻开这本名为「你」的书，在星空下写一段只属于你的冒险。
+version: 1.2.0
+author: 昔涟
+repo: https://github.com/astrbot/astrbot_plugin_as_i_write
