@@ -4,3 +4,4 @@ __pycache__/
 .codegraph/
 .mimosa/
 main.py.bak.before_refactor
+data
