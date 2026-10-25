@@ -263,7 +263,7 @@ def _is_admin(event: AstrMessageEvent) -> bool:
 
 def _validate_attrs(str_v, agi_v, spr_v, is_admin: bool, is_random: bool) -> tuple:
     if is_random:
-        return True, ""
+        return False, "随机角色不可修改属性值，只能更改名字"
     for name, val in [("力量", str_v), ("敏捷", agi_v), ("精神", spr_v)]:
         if val < MIN_SELF_ATTR:
             return False, f"{name}不能低于{MIN_SELF_ATTR}"

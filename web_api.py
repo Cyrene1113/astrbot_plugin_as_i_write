@@ -35,6 +35,11 @@ from .core import PLUGIN_ID, _save_json
 from .lore import normalize_character, normalize_world
 from .render_pipeline import apply_render_scripts
 
+try:
+    from .archetypes import normalize_archetype
+except Exception:  # pragma: no cover - archetypes.py 由并行任务稍后落地，未就绪时不阻断插件加载
+    normalize_archetype = None  # type: ignore[assignment]
+
 ROUTE_BASE = f"/{PLUGIN_ID}"
 PLUGIN_TITLE = "如我所书"
 SSE_HEARTBEAT_SECONDS = 15
@@ -203,6 +208,9 @@ class AsIWriteWebAPI:
             ("/character/delete", self._character_delete, ["POST"], "删除角色卡"),
             ("/saves", self._saves, ["GET"], "全部存档"),
             ("/save/delete", self._save_delete, ["POST"], "删除存档"),
+            ("/archetypes", self._archetypes, ["GET"], "全部种族/职业图鉴条目"),
+            ("/archetype/save", self._archetype_save, ["POST"], "保存种族/职业图鉴条目"),
+            ("/archetype/delete", self._archetype_delete, ["POST"], "删除种族/职业图鉴条目"),
             ("/config", self._config, ["GET"], "读取配置 schema 与运行时配置"),
             ("/config/save", self._config_save, ["POST"], "保存运行时配置"),
             ("/export/world", self._export_world, ["GET"], "导出世界卡（CCv3）"),
@@ -341,6 +349,7 @@ class AsIWriteWebAPI:
                 "worlds": len(getattr(p, "_worlds", None) or {}),
                 "characters": len(getattr(p, "_characters", None) or {}),
                 "saves": len(getattr(p, "_saves", None) or {}),
+                "archetypes": len(getattr(p, "_archetypes", None) or {}),
             }
         except Exception as exc:
             return self._fail(f"健康检查失败: {exc}")
@@ -462,6 +471,61 @@ class AsIWriteWebAPI:
             return {"ok": True}
         except Exception as exc:
             return self._fail(f"删除存档失败: {exc}")
+
+    # ── 种族/职业图鉴 ──
+
+    async def _archetypes(self):
+        try:
+            data = copy.deepcopy(getattr(self.plugin, "_archetypes", None) or {})
+            type_filter = self._query("type").lower()
+            if type_filter:
+                if type_filter not in ("race", "job"):
+                    return self._fail("type 参数仅支持 race 或 job", 400)
+                filtered: dict[str, dict] = {}
+                for entry_name, item in data.items():
+                    item_type = (
+                        str(item.get("type") or "").strip().lower()
+                        if isinstance(item, dict)
+                        else ""
+                    )
+                    if item_type == type_filter:
+                        filtered[entry_name] = item
+                data = filtered
+            return data
+        except Exception as exc:
+            return self._fail(f"读取图鉴库失败: {exc}")
+
+    async def _archetype_save(self):
+        try:
+            body = await self._json_body()
+            # 官方桥的 apiPost 没有 query 通道，资源名兼容从 body 读取
+            name = self._query("name") or str(body.get("name") or "").strip()
+            if not name:
+                return self._fail("缺少条目名称", 400)
+            body.pop("name", None)
+            type_ = str(body.get("type") or "race").strip()
+            if type_ not in ("race", "job"):
+                return self._fail("type 仅支持 race 或 job", 400)
+            if normalize_archetype is None:
+                return self._fail("图鉴库模块（archetypes.py）尚未就绪", 500)
+            arche = normalize_archetype(body, name=name, type_=type_)
+            self.plugin._archetypes[name] = arche
+            _save_json(self.plugin._archetypes_path, self.plugin._archetypes)
+            self.notify("archetypes_changed", {"name": name})
+            return {"ok": True, "name": name}
+        except Exception as exc:
+            return self._fail(f"保存图鉴条目失败: {exc}")
+
+    async def _archetype_delete(self):
+        try:
+            body = await self._json_body()
+            name = self._query("name") or str(body.get("name") or "").strip()
+            self.plugin._archetypes.pop(name, None)
+            _save_json(self.plugin._archetypes_path, self.plugin._archetypes)
+            self.notify("archetypes_changed", {"name": name})
+            return {"ok": True}
+        except Exception as exc:
+            return self._fail(f"删除图鉴条目失败: {exc}")
 
     # ── 配置 ──
 

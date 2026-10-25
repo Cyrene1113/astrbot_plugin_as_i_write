@@ -88,7 +88,7 @@ h2{font-size:20px;margin-bottom:18px;color:var(--accent)}
 
 <div class="sb">
   <h1>如我所书</h1>
-  <div class="tab act" data-t="worlds"><span class="ico">W</span> 世界观库</div>
+  <div class="tab act" data-t="worlds"><span class="ico">W</span> 世界与图鉴</div>
   <div class="tab" data-t="characters"><span class="ico">C</span> 角色卡库</div>
   <div class="tab" data-t="saves"><span class="ico">S</span> 存档馆</div>
   <div class="tab" data-t="config"><span class="ico">P</span> 配置</div>
@@ -99,11 +99,34 @@ h2{font-size:20px;margin-bottom:18px;color:var(--accent)}
 
 <div class="main">
   <div class="page act" id="p-worlds">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;gap:10px;flex-wrap:wrap">
-      <h2 style="margin:0"><span class="ico-lg">W</span> 世界观库</h2>
-      <div><input id="world-import" type="file" accept="application/json" hidden onchange="importWorldFile(this)"><button class="btn" onclick="document.getElementById('world-import').click()">导入 V3</button> <button class="btn btn-p" onclick="we()">+ 新建</button></div>
+    <h2 style="margin-bottom:12px"><span class="ico-lg">W</span> 世界与图鉴</h2>
+    <div class="tabs" id="aw-tabs">
+      <button class="act" data-t="world" onclick="aswitch('world')">世界观</button>
+      <button data-t="race" onclick="aswitch('race')">种族库</button>
+      <button data-t="job" onclick="aswitch('job')">职业库</button>
     </div>
-    <div class="grid" id="wl"></div>
+    <div class="tc act" id="awc-world">
+      <div style="display:flex;justify-content:flex-end;align-items:center;margin-bottom:18px;gap:10px;flex-wrap:wrap">
+        <div><input id="world-import" type="file" accept="application/json" hidden onchange="importWorldFile(this)"><button class="btn" onclick="document.getElementById('world-import').click()">导入 V3</button> <button class="btn btn-p" onclick="we()">+ 新建</button></div>
+      </div>
+      <div class="grid" id="wl"></div>
+    </div>
+    <div class="tc" id="awc-race">
+      <div class="hintline">种族决定角色创建时的三维补正与天赋被动/负面；带「内置」徽章的条目由插件预置，删除后可重新手建。</div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;gap:10px;flex-wrap:wrap">
+        <span style="font-size:13px;color:var(--dim)" id="ac-race"></span>
+        <button class="btn btn-p" onclick="ae()">+ 新建种族</button>
+      </div>
+      <div class="grid" id="al-race"></div>
+    </div>
+    <div class="tc" id="awc-job">
+      <div class="hintline">职业决定角色创建时的三维补正与专属技能；带「内置」徽章的条目由插件预置，删除后可重新手建。</div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;gap:10px;flex-wrap:wrap">
+        <span style="font-size:13px;color:var(--dim)" id="ac-job"></span>
+        <button class="btn btn-p" onclick="ae()">+ 新建职业</button>
+      </div>
+      <div class="grid" id="al-job"></div>
+    </div>
   </div>
   <div class="page" id="p-characters">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;gap:10px;flex-wrap:wrap">
@@ -236,7 +259,7 @@ function scheduleSseReconnect(){
     _sseId=null;sseConnect();
   },8000);
 }
-const EVENT_LABEL={worlds_changed:'世界观库已同步',characters_changed:'角色卡库已同步',saves_changed:'存档馆已同步',config_changed:'配置已同步',render_scripts_changed:'渲染脚本已同步'};
+const EVENT_LABEL={worlds_changed:'世界观库已同步',characters_changed:'角色卡库已同步',saves_changed:'存档馆已同步',config_changed:'配置已同步',render_scripts_changed:'渲染脚本已同步',archetypes_changed:'图鉴已同步'};
 function handleEvent(msg){
   if(!msg||typeof msg!=='object'||!msg.type)return;
   const type=String(msg.type);
@@ -253,6 +276,8 @@ function handleEvent(msg){
     if(_activeTab==='config')updateConfigRuntime();else refreshConfigWorldOptions();
   }else if(type==='render_scripts_changed'){
     if(_activeTab==='scripts')lscripts();
+  }else if(type==='archetypes_changed'){
+    if(_activeTab==='worlds'&&_subTab!=='world')la();
   }
   tt(EVENT_LABEL[type]);
 }
@@ -277,9 +302,9 @@ async function lw(){const el=document.getElementById('wl');el.innerHTML='<div cl
     }).join('')}
   catch(e){el.innerHTML='<div class="loading" style="color:var(--danger)">'+esc(e.message)+'</div>'}}
 
-function wtab(act){document.querySelectorAll('.tc').forEach(e=>e.classList.remove('act'));document.querySelectorAll('.tabs button').forEach(e=>e.classList.remove('act'));
+function wtab(act){document.querySelectorAll('#mct .tc').forEach(e=>e.classList.remove('act'));document.querySelectorAll('#mct .tabs button').forEach(e=>e.classList.remove('act'));
   const el=document.getElementById('tc-'+act);if(el)el.classList.add('act');
-  const bt=document.querySelector('.tabs button[data-t="'+act+'"]');if(bt)bt.classList.add('act')}
+  const bt=document.querySelector('#mct .tabs button[data-t="'+act+'"]');if(bt)bt.classList.add('act')}
 
 function wr(){
   const ov=_wtemp.overview||{},np=_wtemp.npc||[],pl=(_wtemp.plotlines||_wtemp.plot_nodes||[]),cl=_wtemp.clues||[],eg=(_wtemp.eggs||(_wtemp.easter_eggs||[]).map(e=>typeof e==='string'?{text:e,trigger_condition:'',reward:''}:e)),entries=_wtemp.entries||[];
@@ -462,6 +487,92 @@ async function exportDownload(endpoint,params,filename){
 }
 async function exportWorld(n){try{await exportDownload('export/world',{name:n},n+'.json');tt('已导出 '+n+'.json')}catch(e){tt(e.message,'bad')}}
 async function importWorldFile(input){const f=input.files[0];if(!f)return;try{const card=JSON.parse(await f.text());const name=await uiPrompt('导入世界观','导入名称（留空使用卡内名称）','');if(name===null){return}await ap('import/world',{card,name:name.trim()});markLocal('worlds_changed');tt('世界卡已导入');lw()}catch(e){tt(e.message,'bad')}finally{input.value=''}}
+
+/* ================= 世界与图鉴：种族/职业库 ================= */
+let _subTab='world';                         // 页内子页：world / race / job
+const _archCache={race:[],job:[]};           // 图鉴列表缓存（[name, archetype]）
+let _archEditName=null,_archEditSrc=null;    // 图鉴编辑暂存（编辑时名称锁定，不做重命名）
+const ATTR_CN={str:'力量',agi:'敏捷',spr:'精神'};
+function aswitch(t){
+  _subTab=t;
+  ['world','race','job'].forEach(k=>{const p=document.getElementById('awc-'+k);if(p)p.classList.toggle('act',k===t)});
+  document.querySelectorAll('#aw-tabs button').forEach(b=>b.classList.toggle('act',b.dataset.t===t));
+  if(t!=='world')la(t);
+}
+async function la(type){
+  type=type||_subTab;if(type==='world')return;
+  const el=document.getElementById('al-'+type);if(!el)return;
+  el.innerHTML='<div class="loading">加载中...</div>';
+  try{let d=await ag('archetypes',{type:type});
+    if(d&&typeof d==='object'&&d.archetypes&&typeof d.archetypes==='object')d=d.archetypes;
+    const e=entriesOf(d);_archCache[type]=e;
+    const cnt=document.getElementById('ac-'+type);if(cnt)cnt.textContent='共 '+e.length+' 个';
+    if(!e.length){el.innerHTML='<div class="loading">暂无'+(type==='race'?'种族':'职业')+'条目，点击右上角「+ 新建」</div>';return}
+    el.innerHTML=e.map(x=>archCard(x[0],x[1],type)).join('')}
+  catch(e){el.innerHTML='<div class="loading" style="color:var(--danger)">'+esc(e.message)+'</div>'}}
+
+function archCard(n,a,type){
+  a=a||{};const isRace=(a.type||type)==='race';
+  const ab=a.attr_bonus||{};
+  const chips=['str','agi','spr'].filter(k=>+ab[k]).map(k=>'<span class="st">'+ATTR_CN[k]+(ab[k]>0?'+':'')+ab[k]+'</span>').join(' ')||'<span style="color:var(--dim)">无补正</span>';
+  const mid=isRace?('天赋：'+esc((a.innate_passives||[]).join('、')||'无')+'｜负面：'+esc((a.innate_negatives||[]).join('、')||'无'))
+                  :('技能：'+(a.job_skill&&a.job_skill.name?esc(a.job_skill.name)+((a.job_skill.desc)?' - '+esc(clampText(a.job_skill.desc,30)):''):'无'));
+  const full=isRace?('天赋 '+(a.innate_passives||[]).join('、')+'；负面 '+(a.innate_negatives||[]).join('、')):('技能 '+(a.job_skill&&a.job_skill.name||'无'));
+  return `<div class="card" onclick="ae('${jsq(n)}')">
+    <h3>${esc(a.name||n)} <span class="badge"${isRace?'':' style="background:rgba(156,207,216,0.15);color:var(--accent2)"'}>${isRace?'种族':'职业'}</span>${a.builtin?' <span class="badge" style="background:rgba(246,193,119,0.16);color:var(--warn)">内置</span>':''}</h3>
+    ${a.description?`<p>${esc(a.description)}</p>`:'<p style="color:var(--dim)">暂无描述</p>'}
+    <div style="display:flex;gap:6px;margin-top:6px;flex-wrap:wrap;font-size:12px">${chips}</div>
+    <div title="${esc(full)}" style="font-size:12px;color:var(--dim);margin-top:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${mid}</div>
+    <div style="margin-top:8px"><button class="btn btn-sm" onclick="event.stopPropagation();ae('${jsq(n)}')">编辑</button> <button class="btn btn-sm btn-d" onclick="event.stopPropagation();da('${jsq(n)}')">删除</button></div></div>`}
+
+function ae(n){
+  let a=null;
+  if(n){const hit=(_archCache[_subTab]||[]).find(x=>x[0]===n);if(hit)a=hit[1]}
+  _archEditName=n||null;_archEditSrc=a;
+  const et=(a&&a.type)||(_subTab==='job'?'job':'race');
+  const ab=(a&&a.attr_bonus)||{};
+  const num=k=>{const v=ab[k];return (typeof v==='number'&&Number.isFinite(v))?v:0};
+  const lock=!!n;
+  mo('<h3>'+(lock?'编辑':'新建')+(et==='race'?'种族':'职业')+(lock?' - '+esc(n):'')+'</h3>'+
+    '<div class="fr"><div class="fg"><label>名称'+(lock?'（编辑时不可修改，如需重命名请删除后新建）':'')+'</label><input id="ar-n" value="'+esc(lock?n:'')+'"'+(lock?' disabled':'')+'></div>'+
+    '<div class="fg" style="flex:0.5"><label>类型</label><select id="ar-ty"'+(lock?' disabled':'')+' onchange="arTypeUI()"><option value="race"'+(et==='race'?' selected':'')+'>种族</option><option value="job"'+(et==='job'?' selected':'')+'>职业</option></select></div></div>'+
+    '<div class="fg"><label>描述</label><textarea id="ar-d" rows="3">'+esc((a&&a.description)||'')+'</textarea></div>'+
+    '<div class="fr"><div class="fg"><label>力量补正（-3 ~ +3）</label><input id="ar-str" type="number" min="-3" max="3" value="'+num('str')+'"></div>'+
+    '<div class="fg"><label>敏捷补正（-3 ~ +3）</label><input id="ar-agi" type="number" min="-3" max="3" value="'+num('agi')+'"></div>'+
+    '<div class="fg"><label>精神补正（-3 ~ +3）</label><input id="ar-spr" type="number" min="-3" max="3" value="'+num('spr')+'"></div></div>'+
+    '<div id="ar-race-f" style="display:'+(et==='race'?'block':'none')+'"><div class="fr"><div class="fg"><label>天赋被动（逗号分隔）</label><input id="ar-pa" value="'+esc(((a&&a.innate_passives)||[]).join(', '))+'"></div>'+
+    '<div class="fg"><label>天赋负面（逗号分隔）</label><input id="ar-ne" value="'+esc(((a&&a.innate_negatives)||[]).join(', '))+'"></div></div></div>'+
+    '<div id="ar-job-f" style="display:'+(et==='job'?'block':'none')+'"><div class="fr"><div class="fg"><label>专属技能名</label><input id="ar-sk" value="'+esc((a&&a.job_skill&&a.job_skill.name)||'')+'"></div></div>'+
+    '<div class="fg"><label>专属技能描述</label><input id="ar-skd" value="'+esc((a&&a.job_skill&&a.job_skill.desc)||'')+'"></div></div>'+
+    '<div class="fg"><label>标签（逗号分隔）</label><input id="ar-tg" value="'+esc(((a&&a.tags)||[]).join(', '))+'"></div>'+
+    '<div class="ma"><button class="btn" onclick="mc()">取消</button><button class="btn btn-p" onclick="sa()">保存</button></div>');
+}
+function arTypeUI(){const t=gv('ar-ty');const r=document.getElementById('ar-race-f'),j=document.getElementById('ar-job-f');if(r)r.style.display=t==='race'?'block':'none';if(j)j.style.display=t==='job'?'block':'none'}
+async function sa(){
+  const n=gv('ar-n').trim();
+  if(!n){tt('名称必填','bad');return}
+  const et=_archEditName?((_archEditSrc&&_archEditSrc.type)||'race'):gv('ar-ty');
+  const num=k=>{let v=parseInt(document.getElementById('ar-'+k).value,10);if(!Number.isFinite(v))v=0;return Math.max(-3,Math.min(3,v))};
+  const item={name:n,type:et,description:gv('ar-d').trim(),
+    attr_bonus:{str:num('str'),agi:num('agi'),spr:num('spr')},
+    innate_passives:et==='race'?_entryParts(gv('ar-pa')):[],   /* 复用世界观条目的分隔解析（中英文逗号/顿号/换行） */
+    innate_negatives:et==='race'?_entryParts(gv('ar-ne')):[],
+    job_skill:et==='job'?(gv('ar-sk').trim()?{name:gv('ar-sk').trim(),desc:gv('ar-skd').trim()}:null):null,
+    tags:_entryParts(gv('ar-tg')),
+    builtin:!!(_archEditSrc&&_archEditSrc.builtin)};
+  /* 编辑时透传 created_at 等原字段；name/type 以表单为准，name 已在 body（桥的 apiPost 不支持 query 参数） */
+  const payload=Object.assign({},_archEditSrc||{},item);
+  try{await ap('archetype/save',payload);
+    markLocal('archetypes_changed');tt('已保存');mc();
+    if(et!==_subTab){aswitch(et)}else{la(et)}}
+  catch(e){tt(e.message,'bad')}}
+async function da(n){
+  const hit=(_archCache[_subTab]||[]).find(x=>x[0]===n);
+  const a=(hit&&hit[1])||{};
+  const kind=((a.type||_subTab)==='job')?'职业':'种族';
+  if(!(await uiConfirm('删除'+kind+'「'+n+'」？该操作不可恢复。'+(a.builtin?'（内置模板，删除后可重新手建）':''),'删除'+kind)))return;
+  try{await ap('archetype/delete',{name:n});markLocal('archetypes_changed');tt('已删除');la(_subTab)}
+  catch(e){tt(e.message,'bad')}}
 
 /* ================= 角色卡库 ================= */
 async function lc(){const el=document.getElementById('cl');el.innerHTML='<div class="loading">加载中...</div>';

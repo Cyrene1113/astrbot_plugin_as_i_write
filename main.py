@@ -18,6 +18,12 @@ from astrbot.api.provider import LLMResponse
 from astrbot.api.star import Context, Star, register
 from astrbot.core.utils.session_waiter import SessionController, session_waiter
 
+from .archetypes import (
+    archetype_to_char_field,
+    find_archetype,
+    render_archetype_line,
+    seed_builtin_archetypes,
+)
 from .core import (
     DATA_DIR,
     PLUGIN_ID,
@@ -50,6 +56,7 @@ from .rpg import (
     _forget_skill,
     _is_admin,
     _parse_attr_args,
+    _power_band,
     _random_grade,
     _recalc_rpg,
     _render_rpg_sheet,
@@ -81,7 +88,7 @@ def _get_character_skills(char: dict) -> tuple[list, list]:
 #  主插件类
 # ════════════════════════════════════════════════
 
-@register(PLUGIN_ID, "昔涟", "📖 如我所书 — 由AI驱动的动态文字冒险游戏", version="1.3.0")
+@register(PLUGIN_ID, "昔涟", "📖 如我所书 — 由AI驱动的动态文字冒险游戏", version="1.4.0")
 class AsIWritePlugin(Star):
     """如我所书 — 翻开书页，故事便开始流淌。"""
 
@@ -107,6 +114,10 @@ class AsIWritePlugin(Star):
         render_data = _load_json(self._render_scripts_path)
         self.render_scripts = render_data.get("scripts", []) if isinstance(render_data, dict) else []
 
+        # ── 种族/职业图鉴（文件即真相；空文件时播种内置模板） ──
+        self._archetypes_path = DATA_DIR / "archetypes.json"
+        self._archetypes = seed_builtin_archetypes(self._archetypes_path)
+
         raw_characters = _load_json(self._characters_path)
         raw_worlds = _load_json(self._worlds_path)
         self._characters, self._worlds, characters_changed, worlds_changed = normalize_collections(
@@ -114,8 +125,11 @@ class AsIWritePlugin(Star):
         )
         if characters_changed:
             _save_json(self._characters_path, self._characters)
+            # 启动阶段 _web_api 尚未注册，_notify 为 no-op，仅保持落盘后必通知的惯例
+            self._notify("characters_changed", {"uid": "startup"})
         if worlds_changed:
             _save_json(self._worlds_path, self._worlds)
+            self._notify("worlds_changed", {})
         self._saves: dict = _load_json(self._saves_path)
         self._logs: dict = _load_json(self._logs_path)
         self._endings: dict = _load_json(self._endings_path)
@@ -133,7 +147,13 @@ class AsIWritePlugin(Star):
         self._web_api = AsIWriteWebAPI(self)
         self._web_api.register()
 
-        logger.info(f"📖 如我所书 v1.3.0 | 角色卡:{len(self._characters)} 世界观:{len(self._worlds)}")
+        logger.info(f"📖 如我所书 v1.4.0 | 角色卡:{len(self._characters)} 世界观:{len(self._worlds)} 图鉴:{len(self._archetypes)}")
+
+    def _notify(self, event_type: str, data: dict | None = None) -> None:
+        """把聊天侧的数据变更推送给 WebUI（SSE）。"""
+        web_api = getattr(self, "_web_api", None)
+        if web_api is not None:
+            web_api.notify(event_type, data or {})
 
     def _render_story(self, text: str) -> str:
         """只转换发给用户的副本，历史与存档继续保留 LLM 原文。"""
@@ -230,6 +250,7 @@ class AsIWritePlugin(Star):
             char_data[k] = v
         self._characters[uid] = char_data
         _save_json(self._characters_path, self._characters)
+        self._notify("characters_changed", {"uid": uid})
         await self._kb_store("character", f"角色「{name}」：{desc}", {"character_name": name, "world_name": world_name or ""})
         msg = f"🎭 角色卡已创建！\n名字：{name}\n背景：{desc}"
         if world_name:
@@ -266,6 +287,7 @@ class AsIWritePlugin(Star):
             char["social_status"] = status
             char["updated_at"] = time.time()
             _save_json(self._characters_path, self._characters)
+            self._notify("characters_changed", {"uid": uid})
             yield event.plain_result(f"✅ 社会地位已更新：{status}")
             return
         if rest.startswith("关联世界"):
@@ -276,11 +298,13 @@ class AsIWritePlugin(Star):
             char["world"] = w
             char["updated_at"] = time.time()
             _save_json(self._characters_path, self._characters)
+            self._notify("characters_changed", {"uid": uid})
             yield event.plain_result(f"✅ 已关联世界观「{w}」")
             return
         char["description"] = rest
         char["updated_at"] = time.time()
         _save_json(self._characters_path, self._characters)
+        self._notify("characters_changed", {"uid": uid})
         yield event.plain_result(f"✅ 角色卡已更新：{rest}")
 
     # ════════════════════════════════════════════════
@@ -324,6 +348,7 @@ class AsIWritePlugin(Star):
         _recalc_rpg(char)
         char["updated_at"] = time.time()
         _save_json(self._characters_path, self._characters)
+        self._notify("characters_changed", {"uid": uid})
         yield event.plain_result(f"✅ 属性已更新！\n💪力量：{s}  🏃敏捷：{ag}  🧠精神：{sp}\n❤️HP：{char['hp']}  💙MP：{char['mp']}  ⚔️战力：{char['power']}")
 
     @adventure.command("评级")
@@ -349,11 +374,24 @@ class AsIWritePlugin(Star):
             yield event.plain_result("格式：冒险 种族 <种族名称>")
             return
         race_name = rest.split(" ")[0].strip()
+        arche = find_archetype(self._archetypes, race_name, "race")
+        if arche:
+            char["race"] = archetype_to_char_field(arche)
+            _recalc_rpg(char)
+            char["updated_at"] = time.time()
+            _save_json(self._characters_path, self._characters)
+            self._notify("characters_changed", {"uid": uid})
+            yield event.plain_result(
+                f"🧬 种族已设为「{race_name}」（图鉴模板）\n📋 {render_archetype_line(arche)}"
+                f"\n⚔️ 阶层：{_power_band(int(char['power']))['name']}（战力 {char['power']}）"
+            )
+            return
         char["race"] = {"name": race_name, "innate_passives": [], "innate_negatives": [], "attr_bonus": {"str": 0, "agi": 0, "spr": 0}}
         _recalc_rpg(char)
         char["updated_at"] = time.time()
         _save_json(self._characters_path, self._characters)
-        yield event.plain_result(f"✅ 种族已设为「{race_name}」\n💡 种族补正和被动能力将由 GM 在冒险中写入。")
+        self._notify("characters_changed", {"uid": uid})
+        yield event.plain_result(f"✅ 种族已设为「{race_name}」\n💡 种族补正和被动能力将由 GM 在冒险中写入。\n💡 未在图鉴中找到，已按自定义种族记录；「冒险 种族列表」查看内置模板")
 
     @adventure.command("职业")
     async def set_job(self, event: AstrMessageEvent):
@@ -368,11 +406,74 @@ class AsIWritePlugin(Star):
             yield event.plain_result("格式：冒险 职业 <职业名称>")
             return
         job_name = rest.split(" ")[0].strip()
+        arche = find_archetype(self._archetypes, job_name, "job")
+        if arche:
+            char["job"] = archetype_to_char_field(arche)
+            _recalc_rpg(char)
+            char["updated_at"] = time.time()
+            _save_json(self._characters_path, self._characters)
+            self._notify("characters_changed", {"uid": uid})
+            yield event.plain_result(
+                f"🧬 职业已设为「{job_name}」（图鉴模板）\n📋 {render_archetype_line(arche)}"
+                f"\n⚔️ 阶层：{_power_band(int(char['power']))['name']}（战力 {char['power']}）"
+            )
+            return
         char["job"] = {"name": job_name, "job_skill": None, "attr_bonus": {"str": 0, "agi": 0, "spr": 0}}
         _recalc_rpg(char)
         char["updated_at"] = time.time()
         _save_json(self._characters_path, self._characters)
-        yield event.plain_result(f"✅ 职业已设为「{job_name}」\n💡 专属技能和补正将由 GM 在冒险中写入。")
+        self._notify("characters_changed", {"uid": uid})
+        yield event.plain_result(f"✅ 职业已设为「{job_name}」\n💡 专属技能和补正将由 GM 在冒险中写入。\n💡 未在图鉴中找到，已按自定义职业记录；「冒险 职业列表」查看内置模板")
+
+    def _render_archetype_list(self, type_: str, title: str, label: str) -> str:
+        """渲染图鉴列表（最多 30 行，超出省略）。"""
+        items = [
+            a for a in self._archetypes.values()
+            if isinstance(a, dict) and str(a.get("type", "")) == type_
+        ]
+        if not items:
+            return f"📖 **{title}**\n\n图鉴中还没有{label}模板。"
+        lines = [f"📖 **{title}**（冒险 {label} <名称> 套用模板）"]
+        for a in items[:30]:
+            lines.append("  · " + render_archetype_line(a))
+        if len(items) > 30:
+            lines.append(f"  ...还有 {len(items) - 30} 条{label}模板")
+        return "\n".join(lines)
+
+    @adventure.command("种族列表")
+    async def list_races(self, event: AstrMessageEvent):
+        yield event.plain_result(self._render_archetype_list("race", "种族图鉴", "种族"))
+
+    @adventure.command("职业列表")
+    async def list_jobs(self, event: AstrMessageEvent):
+        yield event.plain_result(self._render_archetype_list("job", "职业图鉴", "职业"))
+
+    def _apply_archetype_templates(self, char: dict) -> list[str]:
+        """图鉴富化：race/job 名称命中模板且当前补正三项全零时，套用模板字段并重算面板。"""
+        enriched: list[str] = []
+        if not isinstance(char, dict):
+            return enriched
+        for key, type_ in (("race", "race"), ("job", "job")):
+            field = char.get(key)
+            if not isinstance(field, dict):
+                continue
+            name = str(field.get("name", "") or "").strip()
+            if not name:
+                continue
+            bonus = field.get("attr_bonus")
+            bonus = bonus if isinstance(bonus, dict) else {}
+            try:
+                if any(int(bonus.get(k, 0) or 0) != 0 for k in ("str", "agi", "spr")):
+                    continue
+            except (TypeError, ValueError):
+                continue
+            arche = find_archetype(self._archetypes, name, type_)
+            if not arche:
+                continue
+            char[key] = archetype_to_char_field(arche)
+            _recalc_rpg(char)
+            enriched.append(f"🧬 「{name}」已套用图鉴模板补正")
+        return enriched
 
     @adventure.command("技能")
     async def skill_cmd(self, event: AstrMessageEvent):
@@ -403,6 +504,7 @@ class AsIWritePlugin(Star):
             active.append({"name": sk_name, "desc": sk_desc, "mastery": "生疏", "lv": 1})
             char["updated_at"] = time.time()
             _save_json(self._characters_path, self._characters)
+            self._notify("characters_changed", {"uid": uid})
             yield event.plain_result(f"✅ 主动能力「{sk_name}」已记录。")
         elif sub == "被动":
             sub_parts = args.split(" ", 1)
@@ -418,6 +520,7 @@ class AsIWritePlugin(Star):
             passive.append({"name": sk_name, "desc": sk_desc, "mastery": "常驻", "lv": 0})
             char["updated_at"] = time.time()
             _save_json(self._characters_path, self._characters)
+            self._notify("characters_changed", {"uid": uid})
             yield event.plain_result(f"✅ 被动特质「{sk_name}」已记录。")
         elif sub == "遗忘":
             sk_name = args
@@ -433,6 +536,7 @@ class AsIWritePlugin(Star):
                 yield event.plain_result(f"❌ {msg}")
             else:
                 _save_json(self._characters_path, self._characters)
+                self._notify("characters_changed", {"uid": uid})
                 yield event.plain_result(f"✅ {msg}")
         else:
             yield event.plain_result("未知操作。支持：主动 / 被动 / 遗忘")
@@ -449,6 +553,11 @@ class AsIWritePlugin(Star):
         active_count = len(skills.get("active", []))
         passive_count = len(skills.get("passive", []))
         yield event.plain_result(f"✨ 能力栏位\n⚡ 主动能力：{active_count}/{MAX_ACTIVE_SKILLS}\n🌀 被动特质：{passive_count}/{MAX_PASSIVE_SKILLS}\n\n能力用于叙事判定锚点，不做复杂技能点结算。")
+
+    @adventure.command("栏位")
+    async def view_slots(self, event: AstrMessageEvent):
+        async for r in self.view_skill_points(event):
+            yield r
 
     @adventure.command("重置属性")
     async def reset_attributes(self, event: AstrMessageEvent):
@@ -468,6 +577,7 @@ class AsIWritePlugin(Star):
         _recalc_rpg(char)
         char["updated_at"] = time.time()
         _save_json(self._characters_path, self._characters)
+        self._notify("characters_changed", {"uid": uid})
         yield event.plain_result("✅ 属性已重置为默认值。魅力/幸运保持不变♪")
 
     @adventure.command("随机角色")
@@ -558,8 +668,11 @@ class AsIWritePlugin(Star):
             "skills": {"active": active_skills[:MAX_ACTIVE_SKILLS], "passive": passive_skills},
             "created_at": time.time(), "updated_at": time.time(),
         }
+        # LLM 生成的种族/职业名命中图鉴时直接套用内置模板
+        self._apply_archetype_templates(char_data)
         self._characters[uid] = normalize_character(char_data)
         _save_json(self._characters_path, self._characters)
+        self._notify("characters_changed", {"uid": uid})
         sheet = _render_rpg_sheet(self._characters[uid])
         fallback_note = "" if attr_parsed else "\n⚠️ 属性解析失败，已使用随机值兜底。"
         yield event.plain_result(f"🎲 **随机角色已生成！**\n\n{sheet}{fallback_note}\n\n💡 使用「冒险 保存随机角色 <名字>」确认名称即可开始冒险♪\n⚠️ 随机角色不可修改属性值，只能更改名字。")
@@ -583,6 +696,7 @@ class AsIWritePlugin(Star):
         char["name"] = new_name
         char["updated_at"] = time.time()
         _save_json(self._characters_path, self._characters)
+        self._notify("characters_changed", {"uid": uid})
         yield event.plain_result(f"✅ 随机角色已保存！\n名字：{old_name} → **{new_name}**\n\n使用「冒险 开始」翻开第一页吧♪")
 
     # ════════════════════════════════════════════════
@@ -607,7 +721,7 @@ class AsIWritePlugin(Star):
             "created_at": time.time(),
         }, name=name)
         _save_json(self._worlds_path, self._worlds)
-        self._web_api.notify("worlds_changed", {"name": name, "source": "chat_command"})
+        self._notify("worlds_changed", {"name": name, "source": "chat_command"})
         await self._kb_store("world", f"世界观「{name}」：{content}", {"world_name": name})
         yield event.plain_result(f"🌍 世界观「{name}」已投稿！")
 
@@ -659,30 +773,16 @@ class AsIWritePlugin(Star):
             if uid in self._active_single:
                 yield event.plain_result("你已有一场冒险了。")
                 return
-            world_name = ""
-            theme_text = rest.strip() if rest else ""
-            if theme_text.startswith("世界"):
-                raw = theme_text[2:].lstrip("：:")
-                for sep in ["：", ":", " "]:
-                    if sep in raw:
-                        w, _, t = raw.partition(sep)
-                        world_name = w.strip()
-                        theme_text = t.strip()
-                        break
-                else:
-                    parts = raw.strip().split(" ", 1)
-                    world_name = parts[0].strip()
-                    theme_text = parts[1].strip() if len(parts) > 1 else ""
+            world_name, theme = self._parse_adventure_scope(rest)
             if world_name and world_name not in self._worlds:
                 yield event.plain_result(f"未找到世界观「{world_name}」。")
                 return
-            theme = theme_text if theme_text else self.default_theme
             char = self._characters.get(uid, {})
             world = self._worlds.get(world_name, {})
             compiled_context = build_adventure_context(
                 world,
                 char,
-                [theme, theme_text, "故事开始了，请描述第一个场景并给出选项。"],
+                [theme, "故事开始了，请描述第一个场景并给出选项。"],
                 "single",
                 self.lore_content_budget,
             )
@@ -705,6 +805,8 @@ class AsIWritePlugin(Star):
                 "history": [{"role": "system", "content": sys_prompt}, {"role": "user", "content": "故事开始了，请描述第一个场景并给出选项。"}],
                 "created_at": time.time(),
                 "summary": "",
+                # 开局已命中的世界书条目记账：回合中只注入“新命中”的条目
+                "lore_ids": [e["id"] for e in compiled_context["matched_entries"]],
             }
             if self.enable_dice_judgment and char:
                 game_state["history"].append({"role": "system", "content": build_judgment_context(char)})
@@ -712,7 +814,10 @@ class AsIWritePlugin(Star):
             if not provider:
                 yield event.plain_result("暂无可用 LLM 服务。")
                 return
-            yield event.plain_result(f"📖 **单人冒险 · {theme}**{' · ' + world_name if world_name else ''}\n正在编织你的故事...")
+            opening_msg = f"📖 **单人冒险 · {theme}**{' · ' + world_name if world_name else ''}\n正在编织你的故事..."
+            if not char:
+                opening_msg += "\n💡 你还没有角色卡，本局不会记录日志与结算。建议先「冒险 创建角色」。"
+            yield event.plain_result(opening_msg)
             try:
                 resp: LLMResponse = await provider.text_chat(prompt="", session_id=event.get_session_id(), contexts=game_state["history"])
                 story = resp.completion_text or "世界在你眼前展开，等待你的第一步。\n\nA. 向前探索  B. 环顾四周  C. 驻足聆听"
@@ -729,6 +834,20 @@ class AsIWritePlugin(Star):
             game_state = dict(saved_state)
             theme = game_state["theme"]
             world_name = game_state.get("world", "")
+            if game_state.get("lore_ids") is None:
+                # 旧存档没有 lore_ids 记账：按开局入参重跑一次匹配补种，
+                # 避免恢复后把常驻/开局命中的条目当“新命中”重复注入。
+                try:
+                    seed_context = build_adventure_context(
+                        self._worlds.get(world_name, {}),
+                        self._characters.get(uid, {}),
+                        [theme, "故事开始了，请描述第一个场景并给出选项。"],
+                        "single",
+                        self.lore_content_budget,
+                    )
+                    game_state["lore_ids"] = [e["id"] for e in seed_context["matched_entries"]]
+                except Exception:
+                    game_state["lore_ids"] = []
             provider = self.context.get_using_provider()
             if not provider:
                 yield event.plain_result("暂无可用 LLM 服务。")
@@ -774,15 +893,13 @@ class AsIWritePlugin(Star):
                 ctrl.stop()
                 return
             await ev.send(MessageChain([Comp.Plain("故事正在展开...请稍候♪")]))
-            # 判定骰仅对本轮有效：先清掉上一轮的注入块
-            game_state["history"] = [
-                m for m in game_state["history"]
-                if not str(m.get("content", "")).startswith("【本轮判定骰")
-            ]
+            # 判定骰与世界书命中块仅对本轮有效：先清掉上一轮的注入块
+            game_state["history"] = self._strip_round_injections(game_state["history"])
             game_state["history"].append({"role": "user", "content": action})
             char_now = self._characters.get(e_uid)
             if self.enable_dice_judgment and char_now:
                 game_state["history"].append({"role": "system", "content": build_judgment_context(char_now)})
+            self._inject_round_lore(game_state, char_now, action)
             try:
                 resp = await provider.text_chat(prompt="", session_id=ev.get_session_id(), contexts=game_state["history"])
                 story = resp.completion_text or "前路延伸，等待你的下一个选择。"
@@ -822,13 +939,108 @@ class AsIWritePlugin(Star):
             "updated_at": time.time(),
             "summary": game_state.get("summary", "")[:200],
             "history": game_state.get("history", []),
+            # 结算提取水位线：恢复冒险后继续防重复提取
+            "settled_len": game_state.get("settled_len", 0),
         }
         self._saves[save_id] = save_data
         _save_json(self._saves_path, self._saves)
+        self._notify("saves_changed", {"id": save_id})
         return save_id
 
+    @staticmethod
+    def _strip_round_injections(history: list) -> list:
+        """剥掉上一轮注入的判定骰与世界书命中块（两者均为“仅本轮有效”）。"""
+        return [
+            m for m in history
+            if not str(m.get("content", "")).startswith(("【本轮判定骰", "【世界书·新命中】"))
+        ]
+
+    def _inject_round_lore(self, game_state: dict, char: dict | None, extra_text: str = "") -> None:
+        """回合中世界书触发：按本轮文本重跑关键词匹配，新命中条目以 system 块注入。
+
+        每轮先剥掉上一轮的注入块（与判定骰同为“仅本轮有效”），条目整个冒险只注入一次
+        （lore_ids 记账）。新命中内容总量不超过 lore_content_budget 的一半。
+        """
+        try:
+            world_name = str(game_state.get("world", "") or "")
+            if not world_name:
+                return
+            world = self._worlds.get(world_name)
+            if not isinstance(world, dict):
+                return
+            history = game_state.get("history", [])
+            recent_texts: list[str] = []
+            for msg in reversed(history):
+                if len(recent_texts) >= 2:
+                    break
+                if isinstance(msg, dict) and msg.get("role") != "system":
+                    text = str(msg.get("content", "") or "").strip()
+                    if text:
+                        recent_texts.append(text)
+            recent_texts.reverse()
+            extra = str(extra_text or "").strip()
+            match_parts = ([extra] if extra else []) + recent_texts
+            if not match_parts:
+                return
+            context = build_adventure_context(
+                world,
+                char or {},
+                match_parts,
+                "single",
+                self.lore_content_budget,
+            )
+            seen = set(game_state.get("lore_ids", []) or [])
+            fresh = [e for e in context.get("matched_entries", []) if e.get("id") not in seen]
+            if not fresh:
+                return
+            # id → 原始条目映射（世界条目 + 角色个人设定集），用于取出完整 content
+            entry_map: dict[str, dict] = {}
+            for source in (world.get("entries", []),):
+                if not isinstance(source, list):
+                    continue
+                for raw in source:
+                    if isinstance(raw, dict) and raw.get("id"):
+                        entry_map[str(raw["id"])] = raw
+            book = (char or {}).get("character_book")
+            book_entries = book.get("entries", []) if isinstance(book, dict) else []
+            for raw in book_entries:
+                if isinstance(raw, dict) and raw.get("id"):
+                    entry_map.setdefault(str(raw["id"]), raw)
+            budget = max(200, self.lore_content_budget // 2)
+            remaining = budget
+            blocks: list[str] = []
+            new_ids: list[str] = []
+            for item in fresh:
+                if remaining <= 0:
+                    break
+                raw = entry_map.get(str(item.get("id", "")))
+                if not isinstance(raw, dict):
+                    continue
+                content = str(raw.get("content", "") or "").strip()
+                if not content:
+                    continue
+                accepted = content[:remaining]
+                if not accepted:
+                    continue
+                blocks.append(f"【{item.get('name', '未命名条目')}】\n{accepted}")
+                new_ids.append(str(item["id"]))
+                remaining -= len(accepted)
+            if not blocks:
+                return
+            game_state.setdefault("history", []).append({
+                "role": "system",
+                "content": "【世界书·新命中】\n" + "\n\n".join(blocks),
+            })
+            game_state["lore_ids"] = sorted(seen | set(new_ids))
+        except Exception:  # noqa: BLE001 - 回合中世界书注入绝不打断冒险流程
+            pass
+
     async def _settle_adventure(self, uid: str, game_state: dict, exit_type: str = "exit") -> str:
-        """结算冒险：写入日志、标记首次冒险完成，并按配置做结算提取。"""
+        """结算冒险：写入日志、标记首次冒险完成，并按配置做结算提取。
+
+        提取带水位线（settled_len）：只对上次结算后新增的回合做提取；
+        解析失败不推进水位线，下次结算自动重试；结局卡仅在主动退出时允许写入。
+        """
         char = self._characters.get(uid)
         if not char:
             return ""
@@ -861,44 +1073,78 @@ class AsIWritePlugin(Star):
             char["has_adventured"] = True
         char["updated_at"] = time.time()
         _save_json(self._characters_path, self._characters)
-        # 结算提取：属性成长 / 新能力 / 结局卡 / 世界书沉淀（失败静默跳过）
+        self._notify("characters_changed", {"uid": uid})
+        # 结算提取（水位线防重复）：属性成长 / 新能力 / 结局卡 / 世界书沉淀（失败静默跳过）
         notes: list[str] = []
         ending: dict | None = None
-        if self.enable_settle_extract:
-            notes, ending = await self._extract_settlement(uid, char, game_state)
-            if ending:
-                self._endings[f"{uid}_{log_id}"] = {
-                    "uid": uid,
-                    "log_id": log_id,
-                    "character_name": char.get("name", ""),
-                    "theme": theme,
-                    "world": world,
-                    "ended_at": time.time(),
-                    **ending,
-                }
-                _save_json(self._endings_path, self._endings)
+        watermark = int(game_state.get("settled_len", 0) or 0)
+        if watermark > len(history):
+            # 历史被压缩变短：水位线对齐到当前长度，避免旧索引卡死后续提取
+            watermark = len(history)
+            game_state["settled_len"] = len(history)
+        new_slice = history[watermark:]
+        if self.enable_settle_extract and len(new_slice) >= 4:
+            changes, ending = await self._extract_settlement(
+                uid,
+                char,
+                new_slice,
+                world,
+                str(game_state.get("summary", "")),
+                allow_ending=(exit_type == "exit"),
+            )
+            if changes is not None:
+                # 解析成功（哪怕本次无变化）才推进水位线；失败留给下次重试
+                game_state["settled_len"] = len(history)
+            notes = list(changes or [])
+        if ending:
+            self._endings[f"{uid}_{log_id}"] = {
+                "uid": uid,
+                "log_id": log_id,
+                "character_name": char.get("name", ""),
+                "theme": theme,
+                "world": world,
+                "ended_at": time.time(),
+                **ending,
+            }
+            _save_json(self._endings_path, self._endings)
         base = "结算：冒险经历已记录，能力成长将以叙事结果为准。" if exit_type == "exit" else ""
         if notes:
             base = (base + "\n" if base else "") + "📜 " + "；".join(notes)
         return base
 
-    async def _extract_settlement(self, uid: str, char: dict, game_state: dict) -> tuple[list[str], dict | None]:
-        """结算提取：一次 LLM 调用从冒险经历中产出成长与结局信息。"""
+    async def _extract_settlement(
+        self,
+        uid: str,
+        char: dict,
+        history_msgs: list,
+        world_name: str,
+        summary: str,
+        allow_ending: bool,
+    ) -> tuple[list[str] | None, dict | None]:
+        """结算提取：一次 LLM 调用从冒险经历中产出成长与结局信息。
+
+        history_msgs 只传上次结算后新增的消息（水位线由调用方维护）。
+        返回 (changes, ending)；LLM 调用或解析失败时返回 (None, None)，
+        调用方据此不推进水位线。allow_ending=False 时丢弃结局卡（暂停/超时只提取成长）。
+        """
         provider = self.context.get_using_provider()
         if not provider:
-            return [], None
-        recent = [m for m in game_state.get("history", []) if m.get("role") != "system"][-20:]
+            return None, None
+        recent = [
+            m for m in (history_msgs or [])
+            if isinstance(m, dict) and m.get("role") != "system"
+        ][-20:]
         experience = "\n".join(
             f"{m.get('role', '?')}: {str(m.get('content', ''))[:300]}" for m in recent
         )[:6000]
-        world_name = str(game_state.get("world", "") or "")
+        world_name = str(world_name or "")
         world = self._worlds.get(world_name) if world_name else None
         entry_names = [str(e.get("name", "")) for e in (world or {}).get("entries", [])][:50]
         prompt = (
             SETTLE_EXTRACT_PROMPT
             + "\n\n【角色面板】\n" + _render_rpg_sheet(char)
             + "\n\n【冒险经历】\n" + (experience or "（本轮几乎没有推进）")
-            + "\n\n【结局走向】\n" + (str(game_state.get("summary", "")) or "（未明确）")
+            + "\n\n【结局走向】\n" + (str(summary or "") or "（未明确）")
             + "\n\n【世界信息】\n" + (
                 f"世界「{world_name}」已有条目：" + "、".join(n for n in entry_names if n)
                 if world_name else "（无特定世界）"
@@ -909,22 +1155,92 @@ class AsIWritePlugin(Star):
             result = parse_settle_payload(resp.completion_text or "")
         except Exception as e:
             logger.error(f"📖 如我所书 | 结算提取: {str(e)}")
-            return [], None
+            return None, None
         if not result:
-            return [], None
+            return None, None
         entries_before = len((world or {}).get("entries", [])) if world else 0
         try:
             changes, ending = apply_settle_result(char, world, result)
         except Exception as e:
             logger.error(f"📖 如我所书 | 结算提取·应用: {str(e)}")
-            return [], None
+            return None, None
+        if not allow_ending and ending is not None:
+            # 暂停/超时不写结局卡：丢弃 ending，并剔除对应的“结局已记录”提示
+            ending = None
+            changes = [c for c in changes if not str(c).startswith("📖 结局已记录")]
+        # 图鉴富化：种族/职业命中内置模板且补正全零时套用
+        changes.extend(self._apply_archetype_templates(char))
         if changes:
             _save_json(self._characters_path, self._characters)
-            self._web_api.notify("characters_changed", {"uid": uid, "source": "settle"})
+            self._notify("characters_changed", {"uid": uid, "source": "settle"})
         if world is not None and len(world.get("entries", [])) != entries_before:
             _save_json(self._worlds_path, self._worlds)
-            self._web_api.notify("worlds_changed", {"name": world_name, "source": "settle"})
+            self._notify("worlds_changed", {"name": world_name, "source": "settle"})
         return changes, ending
+
+    async def _settle_group(self, session: dict) -> list[str]:
+        """群体冒险收官：写一条群体日志、全员标记首次冒险、逐人结算提取。"""
+        participants = session.get("participants", {})
+        member_uids = [uid for uid, p in participants.items() if isinstance(p, dict)]
+        members: list[tuple[str, dict]] = []
+        character_names: list[str] = []
+        for uid in member_uids:
+            char = self._characters.get(uid)
+            if isinstance(char, dict):
+                members.append((uid, char))
+                character_names.append(str(char.get("name") or f"玩家{uid[-4:]}"))
+        log_id = _generate_id()
+        log_entry = {
+            "id": log_id,
+            "type": "group",
+            "uid": str(session.get("owner_id", "")),
+            "character_name": "、".join(character_names),
+            "participants": member_uids,
+            "character_names": character_names,
+            "theme": session.get("theme", ""),
+            "world": session.get("world", ""),
+            "exit_type": "exit",
+            "ended_at": time.time(),
+            "summary": str(session.get("summary", ""))[:200],
+            "history_length": len(session.get("history", [])),
+        }
+        self._logs[log_id] = log_entry
+        _save_json(self._logs_path, self._logs)
+        for _uid, char in members:
+            if not char.get("has_adventured"):
+                char["has_adventured"] = True
+            char["updated_at"] = time.time()
+        _save_json(self._characters_path, self._characters)
+        self._notify("characters_changed", {"uid": "group"})
+        summary_lines: list[str] = []
+        if self.enable_settle_extract:
+            history = session.get("history", [])
+            world_name = str(session.get("world", "") or "")
+            summary = str(session.get("summary", "") or "")
+            for uid, char in members:
+                name = str(char.get("name") or f"玩家{uid[-4:]}")
+                try:
+                    changes, ending = await self._extract_settlement(
+                        uid, char, history, world_name, summary, allow_ending=True
+                    )
+                except Exception as e:
+                    logger.error(f"📖 如我所书 | 群体·结算 {name}: {str(e)}")
+                    changes, ending = [], None
+                if changes is None:
+                    changes = []
+                if ending:
+                    self._endings[f"{uid}_{log_id}"] = {
+                        "uid": uid,
+                        "log_id": log_id,
+                        "character_name": name,
+                        "theme": session.get("theme", ""),
+                        "world": world_name,
+                        "ended_at": time.time(),
+                        **ending,
+                    }
+                    _save_json(self._endings_path, self._endings)
+                summary_lines.append(f"{name}：{'；'.join(changes)}" if changes else f"{name}：无变化")
+        return summary_lines
 
     def _find_user_saves(self, uid: str) -> list[dict]:
         """查找用户的所有存档"""
@@ -1018,7 +1334,7 @@ class AsIWritePlugin(Star):
                 "线索只能提供局部感知或氛围提示，不要直接给出最优答案，不要推进主线。\n\n"
                 f"场景：{scene[:600]}\n"
                 f"角色：{char.get('name') or p.get('nickname')}，{char.get('description', '')[:120]}\n"
-                f"种族/职业：{char.get('race', '')}/{char.get('job', '')}\n"
+                f"种族/职业：{(char.get('race') or {}).get('name', '无')}/{(char.get('job') or {}).get('name', '无')}\n"
                 f"能力：{skills or '无'}"
             )
             try:
@@ -1040,11 +1356,8 @@ class AsIWritePlugin(Star):
                 p["joined_round"] = session.get("round_id", 0) + 1
         session["round_id"] = int(session.get("round_id", 0)) + 1
         session["status"] = "round_open"
-        # 判定骰仅对本轮有效：先清掉上一轮的注入块
-        session["history"] = [
-            m for m in session["history"]
-            if not str(m.get("content", "")).startswith("【本轮判定骰")
-        ]
+        # 判定骰与世界书命中块仅对本轮有效：先清掉上一轮的注入块
+        session["history"] = self._strip_round_injections(session["history"])
         session["history"].append({"role": "user", "content": action})
         if self.enable_dice_judgment:
             active_chars = [
@@ -1054,6 +1367,8 @@ class AsIWritePlugin(Star):
             ]
             if active_chars:
                 session["history"].append({"role": "system", "content": build_group_judgment_context(active_chars)})
+        # 群体回合的世界书触发：只匹配世界条目（不带任何角色的个人设定集）
+        self._inject_round_lore(session, None, action)
         try:
             resp = await provider.text_chat(prompt="", session_id=event.get_session_id(), contexts=session["history"])
             story = resp.completion_text or "雾中的道路向前延伸。\n\nA. 谨慎探索  B. 原地观察  C. 结伴前进"
@@ -1189,6 +1504,8 @@ class AsIWritePlugin(Star):
             "retired_user_ids": [],
             "round_id": 0,
             "summary": "",
+            # 开局已命中的世界书条目记账：回合中只注入“新命中”的条目
+            "lore_ids": [e["id"] for e in compiled_context["matched_entries"]],
             "created_at": time.time(),
         }
         sys_prompt = GROUP_SYSTEM_PROMPT.format(
@@ -1229,9 +1546,18 @@ class AsIWritePlugin(Star):
                 task = self._group_tasks.pop(key, None)
                 if task and not task.done():
                     task.cancel()
+                # 收官结算要在 session 还在手里的时候做
+                summary_lines: list[str] = []
+                try:
+                    summary_lines = await self._settle_group(session)
+                except Exception as e:
+                    logger.error(f"📖 如我所书 | 群体·结算: {str(e)}")
                 self._group_sessions.pop(key, None)
                 self._group_locks.pop(key, None)
-                yield event.plain_result(f"🚪 {name}离开了队伍。已无在场玩家，群体冒险结束。")
+                end_msg = f"🚪 {name}离开了队伍。已无在场玩家，群体冒险结束。"
+                if summary_lines:
+                    end_msg += "\n📚 结算：\n  " + "\n  ".join(summary_lines)
+                yield event.plain_result(end_msg)
                 return
             await self._maybe_resolve_group_if_all_voted(key)
             yield event.plain_result(f"🚪 {name}暂时离队，守住了故事的另一条退路。\n本场冒险中，退场后不能再次加入。")
@@ -1295,6 +1621,7 @@ class AsIWritePlugin(Star):
             if not save_consumed and save_id and uid in self._active_single:
                 self._saves.pop(save_id, None)
                 _save_json(self._saves_path, self._saves)
+                self._notify("saves_changed", {"id": save_id})
                 save_consumed = True
 
     @adventure.command("放弃")
@@ -1315,6 +1642,7 @@ class AsIWritePlugin(Star):
         save = saves[idx]
         del self._saves[save.get("id", "")]
         _save_json(self._saves_path, self._saves)
+        self._notify("saves_changed", {"id": save.get("id", "")})
         yield event.plain_result(f"🗑️ 已放弃存档「{save.get('theme', '未知')}」。")
 
     @adventure.command("加入")
@@ -1435,8 +1763,3 @@ class AsIWritePlugin(Star):
         voted_count = len(round_state.get("votes", {}))
         yield event.plain_result(f"🗳️ 已记录你的投票：{vote[:80]}（{voted_count}/{active_count}）")
         await self._maybe_resolve_group_if_all_voted(key)
-
-    @adventure.command("行动")
-    async def group_action(self, event: AstrMessageEvent):
-        async for r in self.group_vote(event):
-            yield r
