@@ -11,7 +11,7 @@ from lore import (
 
 
 def test_schema_and_legacy_world_migration() -> None:
-    world = normalize_world({"content": "古老王国", "easter_eggs": ["月夜密门"]}, name="测试世界")
+    world = normalize_world({"content": "古老王国", "eggs": ["月夜密门"], "easter_eggs": ["旧字段彩蛋"]}, name="测试世界")
     assert world["schema_version"] == CURRENT_SCHEMA_VERSION
     assert world["content"] == "古老王国"
     assert len(world["entries"]) == 1
@@ -19,6 +19,22 @@ def test_schema_and_legacy_world_migration() -> None:
     assert world["entries"][0]["content"] == "古老王国"
     assert get_world_eggs(world) == ["月夜密门"]
     assert world["eggs"][0]["text"] == "月夜密门"
+    assert "easter_eggs" not in world
+
+
+def test_character_legacy_fields_stripped() -> None:
+    char = normalize_character({
+        "name": "旅人",
+        "skill_points": 3,
+        "attr_locked": True,
+        "active_skills": [{"name": "旧顶层技能"}],
+        "skills": {"active": [{"name": "剑术", "mp_cost": 15}]},
+    })
+    assert "skill_points" not in char
+    assert "attr_locked" not in char
+    assert "active_skills" not in char
+    assert "passive_skills" not in char
+    assert char["skills"]["active"] == [{"name": "剑术"}]
 
 
 def test_character_defaults_keep_legacy_fields() -> None:

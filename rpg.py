@@ -108,13 +108,14 @@ def _build_world_tier_context(world_data: dict, world_name: str) -> str:
     if not world_data:
         return ""
     lines = [f"【世界强度锚点：{world_name}】"]
-    tier = world_data.get("power_tier", "") or world_data.get("world_scale", "")
+    overview = world_data.get("overview") if isinstance(world_data.get("overview"), dict) else {}
+    tier = str(overview.get("power_tier") or world_data.get("power_tier") or "").strip()
     if tier and tier in POWER_TIERS:
         info = POWER_TIERS[tier]
         lines.append(f"- 世界尺度：{info['name']}（{info['desc']}，常见基准 {info['range'][0]}~{info['range'][1]}）")
     elif tier:
-        lines.append(f"- 世界尺度：{tier}")
-    ref = world_data.get("power_reference", "").strip()
+        lines.append(f"- 世界尺度：{tier}（自定义档位，请按叙事合理把握强度差距）")
+    ref = str(overview.get("power_reference") or world_data.get("power_reference") or "").strip()
     if ref:
         lines.append(f"- 实力等级参考：\n{ref}")
     npc_list = world_data.get("npc", [])
@@ -132,7 +133,6 @@ def _build_world_tier_context(world_data: dict, world_name: str) -> str:
     lines.append("- 判定原则：" + "；".join(POWER_GAP_RULES))
     return "\n".join(lines)
 
-MAX_SKILL_LV = 3
 MAX_ACTIVE_SKILLS = 3
 MAX_PASSIVE_SKILLS = 3
 MAX_SELF_ATTR_SUM = 30
@@ -176,7 +176,6 @@ def _default_rpg() -> dict:
         "hp": _calc_hp(BASE_ATTR),
         "mp": _calc_mp(BASE_ATTR),
         "power": _calc_power(BASE_ATTR, BASE_ATTR, BASE_ATTR, charm, luck),
-        "skill_points": 0,
         "has_adventured": False,
         "is_random": False,
         "race": None,
@@ -295,23 +294,3 @@ def _forget_skill(char: dict, skill_name: str, skill_type: str) -> tuple:
             target.pop(i)
             return True, f"已遗忘「{skill_name}」"
     return False, f"未找到能力「{skill_name}」"
-
-
-def _upgrade_skill(char: dict, skill_name: str) -> tuple:
-    skills = char.setdefault("skills", {"active": [], "passive": []})
-    for st in ["active", "passive"]:
-        for sk in skills.get(st, []):
-            if sk.get("name") == skill_name:
-                lv = sk.get("lv", 0)
-                if lv == 0:
-                    return False, f"「{skill_name}」是无等级技能，无法升级"
-                if lv >= MAX_SKILL_LV:
-                    return False, f"「{skill_name}」已达最高等级 Lv{MAX_SKILL_LV}"
-                sp = char.get("skill_points", 0)
-                if sp < 1:
-                    return False, "技能点不足（需要 1 点）"
-                char["skill_points"] = sp - 1
-                sk["lv"] = lv + 1
-                char["updated_at"] = time.time()
-                return True, f"「{skill_name}」升级成功 Lv{lv} → Lv{lv+1}（剩余技能点：{char['skill_points']}）"
-    return False, f"未找到技能「{skill_name}」"

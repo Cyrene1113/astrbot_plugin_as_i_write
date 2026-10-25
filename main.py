@@ -37,7 +37,6 @@ from .lore import (
 from .prompts import GROUP_SYSTEM_PROMPT, HELP_TEXT, SINGLE_SYSTEM_PROMPT
 from .render_pipeline import apply_render_scripts
 from .rpg import (
-    BASE_ATTR,
     MAX_ACTIVE_SKILLS,
     MAX_PASSIVE_SKILLS,
     MAX_RANDOM_ATTR,
@@ -61,18 +60,14 @@ from .webui_bridge import AsIWriteWebUIBridge
 
 
 def _get_character_skills(char: dict) -> tuple[list, list]:
-    """统一读取角色主动/被动能力，兼容早期顶层技能字段。"""
+    """读取角色主动/被动能力列表。"""
     if not isinstance(char, dict):
         return [], []
     skills = char.get("skills", {})
     if not isinstance(skills, dict):
         skills = {}
-    active = skills.get("active")
-    passive = skills.get("passive")
-    if not isinstance(active, list):
-        active = char.get("active_skills", [])
-    if not isinstance(passive, list):
-        passive = char.get("passive_skills", [])
+    active = skills.get("active", [])
+    passive = skills.get("passive", [])
     return (
         active if isinstance(active, list) else [],
         passive if isinstance(passive, list) else [],
@@ -90,23 +85,20 @@ class AsIWritePlugin(Star):
     def __init__(self, context: Context, config: AstrBotConfig = None):
         super().__init__(context)
         DATA_DIR.mkdir(parents=True, exist_ok=True)
-        self._runtime_config_path = DATA_DIR / "config.json"
-        runtime_config = _load_json(self._runtime_config_path)
-        self.config = dict(config or {})
-        self.config.update(runtime_config)
+        self.config = config if config is not None else {}
         self.default_theme = self.config.get("default_theme", "奇幻世界")
-        self.single_timeout = self.config.get("single_timeout", 300)
-        self.group_round_time = int(self.config.get("group_round_time", self.config.get("group_round_vote_seconds", 60)))
-        self.group_max_players = int(self.config.get("group_max_players", 6))
-        self.group_min_players = int(self.config.get("group_min_players", 2))
+        self.single_timeout = int(self.config.get("single_timeout", 300))
+        self.group_round_time = int(self.config.get("group_round_time", 120))
+        self.group_max_players = int(self.config.get("group_max_players", 8))
         self.group_max_clues_per_round = int(self.config.get("group_max_clues_per_round", 2))
         self.lore_content_budget = int(self.config.get("lore_content_budget", 4000))
+        self.enable_settle_extract = bool(self.config.get("enable_settle_extract", True))
+        self.enable_dice_judgment = bool(self.config.get("enable_dice_judgment", True))
 
         self._characters_path = DATA_DIR / "characters.json"
         self._worlds_path = DATA_DIR / "worlds.json"
         self._saves_path = DATA_DIR / "saves.json"
         self._logs_path = DATA_DIR / "logs.json"
-        self._endings_path = DATA_DIR / "endings.json"
         self._render_scripts_path = DATA_DIR / "regex_scripts.json"
         render_data = _load_json(self._render_scripts_path)
         self.render_scripts = render_data.get("scripts", []) if isinstance(render_data, dict) else []
@@ -122,7 +114,6 @@ class AsIWritePlugin(Star):
             _save_json(self._worlds_path, self._worlds)
         self._saves: dict = _load_json(self._saves_path)
         self._logs: dict = _load_json(self._logs_path)
-        self._endings: dict = _load_json(self._endings_path)
 
         self._active_single: dict[str, SessionController] = {}
         self._adventures: dict[str, dict] = {}
@@ -195,23 +186,19 @@ class AsIWritePlugin(Star):
         except Exception as e:
             logger.error(f"📖 如我所书 | 知识库·存储: {str(e)}")
 
-    async def _kb_search(self, query: str, top_k: int = 5, type_filter: str = None) -> list:
-        try:
-            if not await self._ensure_kb():
-                return []
-            mf = {"source": "as_i_write"}
-            if type_filter:
-                mf["type"] = type_filter
-            results = await self._kb_helper.vec_db.retrieve(query=query, k=top_k, fetch_k=top_k * 3, metadata_filter=mf)
-            return results
-        except Exception as e:
-            logger.error(f"📖 如我所书 | 知识库·检索: {str(e)}")
-            return []
-
     def terminate(self):
-        """插件卸载 / 重载时从基座注销 WebUI 页面与端点。"""
-        if hasattr(self, "_webui_bridge"):
-            self._webui_bridge.unregister()
+        """插件卸载/重载时取消群体定时任务，并移除本插件注册的 Web API 路由。"""
+        for task in list(self._group_tasks.values()):
+            if not task.done():
+                task.cancel()
+        self._group_tasks.clear()
+        apis = getattr(self.context, "registered_web_apis", None)
+        if isinstance(apis, list):
+            prefix = f"/{PLUGIN_ID}"
+            apis[:] = [
+                api for api in apis
+                if not (isinstance(api, tuple) and api and str(api[0]).startswith(prefix))
+            ]
 
     @adventure.command("创建角色")
     async def create_character(self, event: AstrMessageEvent):
@@ -436,8 +423,6 @@ class AsIWritePlugin(Star):
             char["updated_at"] = time.time()
             _save_json(self._characters_path, self._characters)
             yield event.plain_result(f"✅ 被动特质「{sk_name}」已记录。")
-        elif sub == "升级":
-            yield event.plain_result("技能升级已并入轻规则：请通过冒险经历与叙事结果自然提升能力表现。")
         elif sub == "遗忘":
             sk_name = args
             if not sk_name:
@@ -502,7 +487,13 @@ class AsIWritePlugin(Star):
             yield event.plain_result("暂无可用 LLM 服务。")
             return
         world_hint = f"该角色来自世界观「{world_name}」——{self._worlds[world_name].get('content', '')[:300]}" if world_name else ""
-        prompt = f"请创建一个适合冒险的角色卡。{world_hint}\n\n要求：\n1. 角色名字(2-5字)\n2. 简短背景描述(50字以内)\n3. 三维属性(力量/敏捷/精神)在1-20之间随机\n4. 可能拥有1个种族和1个职业\n5. 可能拥有0-2个主动技能和0-2个被动能力\n\n格式：\n名字：\n背景：\n力量：敏捷：精神：\n种族：(可空)\n职业：(可空)\n主动技能：(可空)\n被动能力：(可空)"
+        prompt = (
+            f"请创建一个适合冒险的角色卡。{world_hint}\n\n要求：\n"
+            "1. 角色名字(2-5字)\n2. 简短背景描述(50字以内)\n"
+            "3. 三维属性(力量/敏捷/精神)各1-20随机，必须严格单行格式：力量：12/10/8\n"
+            "4. 可能拥有1个种族和1个职业\n5. 可能拥有0-2个主动技能和0-2个被动能力\n\n"
+            "严格按以下格式输出（只用中文冒号）：\n名字：\n背景：\n力量：12/10/8\n种族：(可空)\n职业：(可空)\n主动技能：(可空，多个用；分隔)\n被动能力：(可空，多个用；分隔)"
+        )
         try:
             resp = await provider.text_chat(prompt=prompt, session_id=event.get_session_id(), contexts=[])
             text = resp.completion_text.strip()
@@ -517,21 +508,23 @@ class AsIWritePlugin(Star):
         job_info = None
         active_skills = []
         passive_skills = []
+        attr_parsed = False
         for line in text.split("\n"):
             line = line.strip()
             if line.startswith("名字：") or line.startswith("名字:"):
                 name = _strip_prefix(line, "名字：").strip() or _strip_prefix(line, "名字:").strip() or name
             elif line.startswith("背景：") or line.startswith("背景:"):
                 desc = _strip_prefix(line, "背景：").strip() or _strip_prefix(line, "背景:").strip() or desc
-            elif line.startswith("力量："):
+            elif line.startswith("力量：") or line.startswith("力量:"):
                 try:
-                    raw = line.split("：", 1)[-1].split(":")[-1].strip()
+                    raw = line.split("：", 1)[-1].split(":", 1)[-1].strip()
                     parts_attr = raw.split("/")
                     if len(parts_attr) >= 2:
                         str_v = min(MAX_RANDOM_ATTR, max(1, int(parts_attr[0])))
                         agi_v = min(MAX_RANDOM_ATTR, max(1, int(parts_attr[1])))
                         spr_v = min(MAX_RANDOM_ATTR, max(1, int(parts_attr[2]) if len(parts_attr) >= 3 else spr_v))
-                except:
+                        attr_parsed = True
+                except (ValueError, IndexError):
                     pass
             elif line.startswith("种族：") or line.startswith("种族:"):
                 rname = _strip_prefix(line, "种族：").strip() or _strip_prefix(line, "种族:").strip()
@@ -547,14 +540,14 @@ class AsIWritePlugin(Star):
                     for sk in sk_text.split("；"):
                         sk = sk.strip()
                         if sk:
-                            active_skills.append({"name": sk, "desc": sk, "mp_cost": 15, "lv": 1})
+                            active_skills.append({"name": sk, "desc": sk, "mastery": "生疏", "lv": 1})
             elif line.startswith("被动能力：") or line.startswith("被动能力:"):
                 pk_text = _strip_prefix(line, "被动能力：").strip() or _strip_prefix(line, "被动能力:").strip()
                 if pk_text and pk_text != "无":
                     for pk in pk_text.split("；"):
                         pk = pk.strip()
                         if pk:
-                            passive_skills.append({"name": pk, "desc": pk, "lv": 0})
+                            passive_skills.append({"name": pk, "desc": pk, "mastery": "常驻", "lv": 0})
         charm = _random_grade("A+")
         luck = _random_grade("A+")
         char_data = {
@@ -564,7 +557,7 @@ class AsIWritePlugin(Star):
             "charm": charm, "luck": luck,
             "hp": _calc_hp(str_v), "mp": _calc_mp(spr_v),
             "power": _calc_power(str_v, agi_v, spr_v, charm, luck),
-            "skill_points": 0, "has_adventured": False, "is_random": True,
+            "has_adventured": False, "is_random": True,
             "race": race_info, "job": job_info,
             "skills": {"active": active_skills[:MAX_ACTIVE_SKILLS], "passive": passive_skills},
             "created_at": time.time(), "updated_at": time.time(),
@@ -572,7 +565,8 @@ class AsIWritePlugin(Star):
         self._characters[uid] = normalize_character(char_data)
         _save_json(self._characters_path, self._characters)
         sheet = _render_rpg_sheet(self._characters[uid])
-        yield event.plain_result(f"🎲 **随机角色已生成！**\n\n{sheet}\n\n💡 使用「冒险 保存随机角色 <名字>」确认名称即可开始冒险♪\n⚠️ 随机角色不可修改属性值，只能更改名字。")
+        fallback_note = "" if attr_parsed else "\n⚠️ 属性解析失败，已使用随机值兜底。"
+        yield event.plain_result(f"🎲 **随机角色已生成！**\n\n{sheet}{fallback_note}\n\n💡 使用「冒险 保存随机角色 <名字>」确认名称即可开始冒险♪\n⚠️ 随机角色不可修改属性值，只能更改名字。")
 
     @adventure.command("保存随机角色")
     async def save_random_character(self, event: AstrMessageEvent):
@@ -613,9 +607,8 @@ class AsIWritePlugin(Star):
         self._worlds[name] = normalize_world({
             "author_id": event.get_sender_id(),
             "content": content,
-            "easter_eggs": [],
+            "eggs": [],
             "created_at": time.time(),
-            "_name": name,
         }, name=name)
         _save_json(self._worlds_path, self._worlds)
         try:
@@ -829,7 +822,7 @@ class AsIWritePlugin(Star):
         return save_id
 
     def _settle_adventure(self, uid: str, game_state: dict, exit_type: str = "exit") -> str:
-        """结算冒险：写入日志、标记首次冒险、记录结局"""
+        """结算冒险：写入日志并标记首次冒险完成。"""
         char = self._characters.get(uid)
         if not char:
             return ""

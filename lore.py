@@ -31,6 +31,9 @@ CHARACTER_DEFAULTS: dict[str, Any] = {
     "character_book": {"entries": []},
 }
 
+# 旧版本遗留字段：归一化时直接剥离，由启动时的 normalize_collections 落盘完成数据迁移
+LEGACY_CHARACTER_KEYS = ("skill_points", "attr_locked", "active_skills", "passive_skills")
+
 
 def _new_entry_id() -> str:
     return uuid.uuid4().hex
@@ -74,12 +77,11 @@ def _egg_text(item: Any) -> str:
 
 
 def sync_world_eggs(world: dict[str, Any]) -> dict[str, Any]:
-    """合并 eggs/easter_eggs，并同步写回结构化与旧版字段。"""
+    """规范化结构化 eggs 字段，并清除旧版 easter_eggs 冗余字段。"""
     structured: list[dict[str, Any]] = []
     seen: set[str] = set()
-    for source in (world.get("eggs", []), world.get("easter_eggs", [])):
-        if not isinstance(source, list):
-            continue
+    source = world.get("eggs", [])
+    if isinstance(source, list):
         for item in source:
             text = _egg_text(item)
             if not text or text in seen:
@@ -94,16 +96,16 @@ def sync_world_eggs(world: dict[str, Any]) -> dict[str, Any]:
                 egg = {"text": text, "trigger_condition": "", "reward": ""}
             structured.append(egg)
     world["eggs"] = structured
-    world["easter_eggs"] = [item["text"] for item in structured]
+    world.pop("easter_eggs", None)
     return world
 
 
 def get_world_eggs(world: Any) -> list[str]:
-    """统一读取彩蛋文本，不要求调用方知道新旧字段。"""
+    """统一读取彩蛋文本列表。"""
     if not isinstance(world, dict):
         return []
     normalized = sync_world_eggs(copy.deepcopy(world))
-    return normalized["easter_eggs"]
+    return [str(item.get("text", "")) for item in normalized.get("eggs", []) if item.get("text")]
 
 
 def normalize_world(world: Any, *, name: str = "") -> dict[str, Any]:
@@ -145,6 +147,16 @@ def normalize_character(character: Any) -> dict[str, Any]:
         character = {"description": str(character or "")}
     result = copy.deepcopy(character)
     result["schema_version"] = CURRENT_SCHEMA_VERSION
+    for key in LEGACY_CHARACTER_KEYS:
+        result.pop(key, None)
+    skills = result.get("skills")
+    if isinstance(skills, dict):
+        for group in ("active", "passive"):
+            items = skills.get(group)
+            if isinstance(items, list):
+                for item in items:
+                    if isinstance(item, dict):
+                        item.pop("mp_cost", None)
     for key, default in CHARACTER_DEFAULTS.items():
         if key not in result or result[key] is None:
             result[key] = copy.deepcopy(default)

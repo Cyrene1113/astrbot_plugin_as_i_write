@@ -1,9 +1,9 @@
 {
   "kb_name": {
-    "description": "关联的知识库名称。角色卡和世界观会自动存入此知识库，冒险时也会通过语义检索调取相关内容。",
+    "description": "关联的知识库名称。角色卡和世界观在创建/投稿时会自动存入该知识库作备份。",
     "type": "string",
     "default": "如我所书",
-    "hint": "在 WebUI 的知识库页面创建同名知识库后使用。默认值「如我所书」已预先注册。"
+    "hint": "在 WebUI 的知识库页面创建同名知识库后使用。留空可停用自动入库。"
   },
   "default_theme": {
     "description": "默认的冒险主题，如果用户在开始游戏时未指定，则使用此主题。",
@@ -18,7 +18,7 @@
     "hint": "建议设置在1000到12000之间；超出预算的低优先级条目会被截断或跳过。"
   },
   "single_timeout": {
-    "description": "单人冒险模式每回合的行动超时时间（秒）。超时后冒险将自动结束。",
+    "description": "单人冒险模式每回合的行动超时时间（秒）。超时后冒险将自动暂停并保存。",
     "type": "int",
     "default": 300,
     "hint": "建议设置在60到600秒之间。"
@@ -34,5 +34,23 @@
     "type": "int",
     "default": 8,
     "hint": "建议设置在4到16人之间。人数太多时每个人的参与感会降低。"
+  },
+  "group_max_clues_per_round": {
+    "description": "群体冒险每轮生成的个性化线索条数上限。",
+    "type": "int",
+    "default": 2,
+    "hint": "每条线索消耗一次 LLM 调用；设为 0 可关闭线索生成。"
+  },
+  "enable_dice_judgment": {
+    "description": "启用判定骰：GM 在叙事遇到不确定结果时使用插件注入的真实随机 d20 骰值自行判定。",
+    "type": "bool",
+    "default": true,
+    "hint": "关闭后冒险回到纯叙事判定，不注入骰值。"
+  },
+  "enable_settle_extract": {
+    "description": "启用冒险结算提取：冒险结束时由 LLM 从经历中提取属性成长、新能力、结局卡与世界书沉淀并写回。",
+    "type": "bool",
+    "default": true,
+    "hint": "每次结算多消耗一次 LLM 调用；提取失败会静默跳过，不影响正常结算。"
   }
 }
