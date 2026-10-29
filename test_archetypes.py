@@ -1,4 +1,7 @@
-"""archetypes 图鉴库与 rpg._validate_attrs 修复回归测试。
+"""archetypes v2 图鉴库与 rpg._validate_attrs 回归测试。
+
+v2 新增覆盖：结构化天赋（{name, desc}）、job_skills 多技能列表、
+裸 job_skill 旧数据升级、内置模板 template_rev 迁移（自定义条目不回写）。
 
 测试环境通常没有安装 astrbot：先尝试真实导入，失败则打桩
 astrbot.api（含 logger）与 astrbot.api.event；再把插件目录包装成包，
@@ -19,14 +22,17 @@ _HERE = Path(__file__).resolve().parent
 class _StubLogger:
     """最小 logger 桩（core.py 顶部需要 astrbot.api.logger）。"""
 
+    def __init__(self) -> None:
+        self.messages: list[str] = []
+
     def info(self, *args, **kwargs) -> None:
-        pass
+        self.messages.append(str(args))
 
     def warning(self, *args, **kwargs) -> None:
-        pass
+        self.messages.append(str(args))
 
     def error(self, *args, **kwargs) -> None:
-        pass
+        self.messages.append(str(args))
 
 
 # ── astrbot 桩：仅满足 core.py / rpg.py 顶部的导入 ──
@@ -92,30 +98,61 @@ def test_normalize_attr_bonus_fill_and_invalid() -> None:
     assert missing["attr_bonus"] == {"str": 0, "agi": 0, "spr": 0}
 
 
-def test_normalize_string_list_cleaning() -> None:
+def test_normalize_structured_traits_and_strings() -> None:
     entry = archetypes.normalize_archetype({
-        "name": "x",
-        "innate_passives": [" 夜视 ", "", "   ", None],
+        "name": "精灵",
+        "innate_passives": [
+            {"name": " 夜视 ", "desc": "黑暗中视物"},
+            "轻盈步伐",
+            {"desc": "无名特质被丢弃"},
+            {"name": "夜视", "desc": "重复名字去重"},
+            "",
+            None,
+        ],
         "innate_negatives": "畏光",
         "tags": ["奇幻", " 主流 ", ""],
     })
-    assert entry["innate_passives"] == ["夜视"]
-    assert entry["innate_negatives"] == ["畏光"]  # 单字符串兼容
+    assert entry["innate_passives"] == [
+        {"name": "夜视", "desc": "黑暗中视物"},
+        {"name": "轻盈步伐", "desc": ""},
+    ]
+    assert entry["innate_negatives"] == [{"name": "畏光", "desc": ""}]  # 单字符串兼容
     assert entry["tags"] == ["奇幻", "主流"]
     non_list = archetypes.normalize_archetype({"name": "x", "tags": 123})
     assert non_list["tags"] == []
+    non_list2 = archetypes.normalize_archetype({"name": "x", "innate_passives": 42})
+    assert non_list2["innate_passives"] == []
 
 
-def test_normalize_job_skill_structure() -> None:
+def test_normalize_job_skills_list_and_legacy_mirror() -> None:
     ok = archetypes.normalize_archetype({
-        "name": "战士", "type": "job", "job_skill": {"name": " 重击 ", "desc": "d", "lv": 3}
+        "name": "战士", "type": "job",
+        "job_skills": [{"name": " 重击 ", "desc": "d", "lv": 3}, {"name": "坚壁", "desc": "e"}],
     })
-    assert ok["job_skill"] == {"name": "重击", "desc": "d"}  # 只保留 name/desc
-    assert archetypes.normalize_archetype({"name": "j", "type": "job", "job_skill": "x"})["job_skill"] is None
+    assert ok["job_skills"] == [{"name": "重击", "desc": "d"}, {"name": "坚壁", "desc": "e"}]
+    assert ok["job_skill"] == {"name": "重击", "desc": "d"}  # 首条镜像
+    # 旧版裸 job_skill 自动升级为列表
+    legacy = archetypes.normalize_archetype({"name": "剑士", "type": "job", "job_skill": {"name": "居合"}})
+    assert legacy["job_skills"] == [{"name": "居合", "desc": ""}]
+    assert legacy["job_skill"] == {"name": "居合", "desc": ""}
+    # 无名/非法结构一律为空
+    assert archetypes.normalize_archetype({"name": "j", "type": "job", "job_skills": "x"})["job_skills"] == []
     assert archetypes.normalize_archetype({"name": "j", "type": "job", "job_skill": {"desc": "无名"}})["job_skill"] is None
     assert archetypes.normalize_archetype({"name": "j", "type": "job"})["job_skill"] is None
-    race = archetypes.normalize_archetype({"name": "r", "job_skill": {"name": "s"}})
-    assert race["job_skill"] is not None  # 结构层不区分 race/job，展示层再区分
+
+
+def test_normalize_narrative_fields_and_rev() -> None:
+    entry = archetypes.normalize_archetype({
+        "name": "龙裔", "race_lore": "龙血后裔", "play_style": "抗线输出",
+        "power_hint": "精英~超凡", "template_rev": "2",
+    })
+    assert entry["race_lore"] == "龙血后裔"
+    assert entry["play_style"] == "抗线输出"
+    assert entry["power_hint"] == "精英~超凡"
+    assert entry["template_rev"] == 2
+    assert entry["schema_version"] == archetypes.ARCHETYPE_SCHEMA_VERSION
+    legacy = archetypes.normalize_archetype({"name": "旧条目"})
+    assert legacy["template_rev"] == 0  # 缺失视为 0，触发迁移
 
 
 def test_normalize_wraps_non_dict_and_keeps_unknown_fields() -> None:
@@ -131,8 +168,13 @@ def test_normalize_wraps_non_dict_and_keeps_unknown_fields() -> None:
     assert result["custom"]["a"] == 1
 
 
-# ── find_archetype ──
+def test_trait_names_helper() -> None:
+    assert archetypes.trait_names([{"name": "夜视"}, "轻盈步伐", {"desc": "无名"}]) == ["夜视", "轻盈步伐"]
+    assert archetypes.trait_names(None) == []
+    assert archetypes.trait_names("夜视") == []  # 非列表返回空
 
+
+# ── find_archetype ──
 _DB = {
     "精灵": {"name": "精灵", "type": "race", "attr_bonus": {"str": 0, "agi": 2, "spr": 2}},
     "战士": {"name": "战士", "type": "job", "attr_bonus": {"str": 3, "agi": 0, "spr": 0}},
@@ -173,12 +215,15 @@ def test_to_char_field_race_structure() -> None:
     race = archetypes.archetype_to_char_field({
         "name": "精灵", "type": "race", "description": "d",
         "attr_bonus": {"str": 0, "agi": 2, "spr": 2},
-        "innate_passives": ["夜视", "轻盈步伐"], "innate_negatives": ["体质孱弱"],
+        "innate_passives": ["夜视", {"name": "轻盈步伐", "desc": "x"}],
+        "innate_negatives": ["体质孱弱"],
         "job_skill": {"name": "不该出现在 race 字段"}, "extra": 1,
     })
     assert race == {
         "name": "精灵", "description": "d",
-        "innate_passives": ["夜视", "轻盈步伐"], "innate_negatives": ["体质孱弱"],
+        "innate_passives": [{"name": "夜视", "desc": ""}, {"name": "轻盈步伐", "desc": "x"}],
+        "innate_negatives": [{"name": "体质孱弱", "desc": ""}],
+        "race_lore": "",
         "attr_bonus": {"str": 0, "agi": 2, "spr": 2},
     }
 
@@ -187,15 +232,20 @@ def test_to_char_field_job_structure() -> None:
     job = archetypes.archetype_to_char_field({
         "name": "战士", "type": "job", "description": "d2",
         "attr_bonus": {"str": 3, "agi": 0, "spr": 0},
-        "job_skill": {"name": "重击", "desc": "x"}, "innate_passives": ["不该出现在 job 字段"],
+        "job_skills": [{"name": "重击", "desc": "x"}, {"name": "坚壁", "desc": "y"}],
+        "play_style": "抗线",
+        "innate_passives": ["不该出现在 job 字段"],
     })
     assert job == {
         "name": "战士", "description": "d2",
+        "job_skills": [{"name": "重击", "desc": "x"}, {"name": "坚壁", "desc": "y"}],
         "job_skill": {"name": "重击", "desc": "x"},
+        "play_style": "抗线",
         "attr_bonus": {"str": 3, "agi": 0, "spr": 0},
     }
     jobless = archetypes.archetype_to_char_field({"name": "剑士", "type": "job"})
     assert jobless["job_skill"] is None
+    assert jobless["job_skills"] == []
     assert jobless["attr_bonus"] == {"str": 0, "agi": 0, "spr": 0}
 
 
@@ -230,12 +280,12 @@ def test_render_line_zero_bonus_and_segments_optional() -> None:
     assert archetypes.render_archetype_line({}) == "未命名（无补正）"
 
 
-def test_render_line_job_with_skill_and_negative_bonus() -> None:
+def test_render_line_job_with_skills_and_negative_bonus() -> None:
     line = archetypes.render_archetype_line({
         "name": "战士", "type": "job", "attr_bonus": {"str": 3, "agi": 0, "spr": 0},
-        "job_skill": {"name": "重击", "desc": "x"},
+        "job_skills": [{"name": "重击", "desc": "x"}, {"name": "坚壁", "desc": "y"}],
     })
-    assert line == "战士（力量+3｜专属：重击）"
+    assert line == "战士（力量+3｜专属：重击、坚壁）"
     undead = archetypes.render_archetype_line({
         "name": "亡灵", "type": "race", "attr_bonus": {"str": 1, "agi": -1, "spr": 3},
         "innate_negatives": ["日光厌恶性状"],
@@ -243,7 +293,7 @@ def test_render_line_job_with_skill_and_negative_bonus() -> None:
     assert "敏捷-1" in undead and "无补正" not in undead
 
 
-# ── seed_builtin_archetypes / load_archetypes ──
+# ── seed_builtin_archetypes / load_archetypes / template_rev 迁移 ──
 
 
 def test_seed_builtin_seeds_empty_dir(tmp_path, monkeypatch) -> None:
@@ -256,9 +306,12 @@ def test_seed_builtin_seeds_empty_dir(tmp_path, monkeypatch) -> None:
     assert all(entry["builtin"] is True for entry in seeded.values())
     assert all(entry["created_at"] > 0 for entry in seeded.values())
     assert all(-2 <= v <= 3 for entry in seeded.values() for v in entry["attr_bonus"].values())
-    assert seeded["精灵"]["innate_passives"] == ["夜视", "轻盈步伐"]
-    assert seeded["战士"]["job_skill"]["name"] == "重击"
+    assert seeded["精灵"]["innate_passives"][0]["name"] == "夜视"
+    assert seeded["战士"]["job_skills"][0]["name"] == "重击"
+    assert len(seeded["战士"]["job_skills"]) >= 2  # v2：职业至少两条专属技能
     assert seeded["精灵"]["type"] == "race" and seeded["战士"]["type"] == "job"
+    assert all(entry["template_rev"] == archetypes.BUILTIN_TEMPLATE_REV for entry in seeded.values())
+    assert all(entry["power_hint"] for entry in seeded.values())
 
 
 def test_seed_builtin_idempotent_and_no_overwrite(tmp_path, monkeypatch) -> None:
@@ -267,6 +320,7 @@ def test_seed_builtin_idempotent_and_no_overwrite(tmp_path, monkeypatch) -> None
     seeded = archetypes.seed_builtin_archetypes(path)
     again = archetypes.seed_builtin_archetypes(path)
     assert len(again) == len(seeded)  # 不重复播种
+    assert again == seeded  # 二次加载内容完全一致（无重复迁移）
     # 已有个别条目的文件不被覆盖、不合并
     custom_path = tmp_path / "custom.json"
     core._save_json(custom_path, {"自定义种族": {"name": "自定义种族", "type": "race"}})
@@ -281,7 +335,7 @@ def test_load_archetypes_normalizes_and_keys_by_name(tmp_path, monkeypatch) -> N
     path = tmp_path / "archetypes.json"
     core._save_json(path, {
         "schema_version": 1,
-        "键名": {"type": "job", "attr_bonus": {"str": "2"}, "job_skill": {"name": "技能"}, "junk": 1},
+        "键名": {"type": "job", "attr_bonus": {"str": "2"}, "job_skills": [{"name": "技能"}], "junk": 1},
         "空名": {"name": "", "type": "?"},
     })
     loaded = archetypes.load_archetypes(path)
@@ -289,11 +343,59 @@ def test_load_archetypes_normalizes_and_keys_by_name(tmp_path, monkeypatch) -> N
     entry = loaded["键名"]
     assert entry["type"] == "job"
     assert entry["attr_bonus"] == {"str": 2, "agi": 0, "spr": 0}
-    assert entry["job_skill"] == {"name": "技能", "desc": ""}
+    assert entry["job_skills"] == [{"name": "技能", "desc": ""}]
     assert entry["junk"] == 1  # 未知字段保留
     assert loaded["空名"]["name"] == "空名"  # 名为空时回退字典键
     # 空文件 / 缺文件 → 空 dict
     assert archetypes.load_archetypes(tmp_path / "missing.json") == {}
+
+
+def test_migration_upgrades_legacy_builtin_and_keeps_custom(tmp_path, monkeypatch) -> None:
+    """旧版内置条目（无 template_rev）加载时升级为新模板；自定义条目原样保留。"""
+    _patch_data_dir(tmp_path, monkeypatch)
+    path = tmp_path / "archetypes.json"
+    legacy_elf = {
+        "name": "精灵", "type": "race", "builtin": True,
+        "description": "旧版描述", "attr_bonus": {"str": 0, "agi": 2, "spr": 2},
+        "innate_passives": ["夜视", "轻盈步伐"], "innate_negatives": ["体质孱弱"],
+        "created_at": 1000.0, "updated_at": 1000.0,
+    }
+    custom_race = {"name": "星灵", "type": "race", "builtin": False, "description": "管理员自定义"}
+    edited_builtin = {
+        "name": "战士", "type": "job", "builtin": True, "template_rev": archetypes.BUILTIN_TEMPLATE_REV,
+        "description": "管理员改过的战士", "attr_bonus": {"str": 3, "agi": 0, "spr": 0},
+        "job_skills": [{"name": "裁决斩", "desc": "自定义技能"}],
+    }
+    core._save_json(path, {"精灵": legacy_elf, "星灵": custom_race, "战士": edited_builtin})
+    loaded = archetypes.load_archetypes(path)
+    # 旧版精灵被升级：拿到 v2 模板内容，rev 达标，created_at 保留
+    elf = loaded["精灵"]
+    assert elf["template_rev"] == archetypes.BUILTIN_TEMPLATE_REV
+    assert elf["description"] != "旧版描述"
+    assert elf["created_at"] == 1000.0
+    assert elf["innate_passives"][0]["name"] == "夜视" and elf["innate_passives"][0]["desc"]
+    # 管理员改过的内置战士（rev 已达标）不被覆盖
+    assert loaded["战士"]["description"] == "管理员改过的战士"
+    assert loaded["战士"]["job_skills"][0]["name"] == "裁决斩"
+    # 自定义条目完全不动
+    assert loaded["星灵"]["description"] == "管理员自定义"
+    assert loaded["星灵"]["template_rev"] == 0
+    # 迁移已落盘：二次加载无变化
+    again = archetypes.load_archetypes(path)
+    assert again == loaded
+    raw = json.loads(path.read_text(encoding="utf-8"))
+    assert raw["schema_version"] == archetypes.ARCHETYPE_SCHEMA_VERSION
+
+
+def test_migration_leaves_non_template_builtins_alone(tmp_path, monkeypatch) -> None:
+    """名字不在内置模板中的 builtin 条目（如管理员自建标记）不做迁移。"""
+    _patch_data_dir(tmp_path, monkeypatch)
+    path = tmp_path / "archetypes.json"
+    entry = {"name": "机械族", "type": "race", "builtin": True, "description": "自建标记内置"}
+    core._save_json(path, {"机械族": entry})
+    loaded = archetypes.load_archetypes(path)
+    assert loaded["机械族"]["description"] == "自建标记内置"
+    assert loaded["机械族"]["template_rev"] == 0
 
 
 # ── rpg._validate_attrs（随机角色校验倒置修复）──

@@ -52,5 +52,11 @@
     "type": "bool",
     "default": true,
     "hint": "每次结算多消耗一次 LLM 调用；提取失败会静默跳过，不影响正常结算。"
+  },
+  "ai_gen_timeout": {
+    "description": "WebUI AI 助手（一键生成/补完/润色）的单次 LLM 调用超时秒数。",
+    "type": "int",
+    "default": 120,
+    "hint": "生成完整世界观较慢，建议 60~300 秒；超时后可在页面重试。"
   }
 }

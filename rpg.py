@@ -70,6 +70,21 @@ def _skill_names(skills: list[dict], limit: int = 3) -> str:
     return "、".join(names)
 
 
+def _trait_names(traits, limit: int = 4) -> str:
+    """从字符串或结构化（{name, desc}）特质列表中取名字，供面板渲染。"""
+    if not isinstance(traits, list):
+        return ""
+    names: list[str] = []
+    for item in traits[:limit]:
+        if isinstance(item, dict):
+            name = str(item.get("name") or "").strip()
+        else:
+            name = str(item or "").strip()
+        if name:
+            names.append(name)
+    return "、".join(names)
+
+
 def _build_player_stats(char: dict) -> str:
     """构建轻规则角色摘要：保留强弱锚点，避免把完整数值表塞进叙事提示。"""
     if not char:
@@ -87,11 +102,20 @@ def _build_player_stats(char: dict) -> str:
         f"- 命运特质：魅力{char.get('charm', 'C')}、幸运{char.get('luck', 'C')}，只作为隐藏倾向，不替代行动逻辑。",
     ]
     race = char.get("race")
-    if race:
+    if isinstance(race, dict) and race.get("name"):
         lines.append(f"- 种族：{race.get('name', '?')}")
+        passive_names = _trait_names(race.get("innate_passives"))
+        if passive_names:
+            lines.append(f"  种族天赋：{passive_names}")
     job = char.get("job")
-    if job:
+    if isinstance(job, dict) and job.get("name"):
         lines.append(f"- 职业：{job.get('name', '?')}")
+        job_skills = job.get("job_skills") if isinstance(job.get("job_skills"), list) else []
+        skill_list = [s for s in job_skills if isinstance(s, dict) and str(s.get("name") or "").strip()]
+        if not skill_list and isinstance(job.get("job_skill"), dict) and str(job["job_skill"].get("name") or "").strip():
+            skill_list = [job["job_skill"]]
+        if skill_list:
+            lines.append("  专属技能：" + "、".join(str(s.get("name")).strip() for s in skill_list[:3]))
     skills = char.get("skills", {})
     active_names = _skill_names(skills.get("active", []))
     passive_names = _skill_names(skills.get("passive", []))
@@ -193,28 +217,35 @@ def _ensure_rpg(char: dict) -> dict:
 
 
 def _recalc_rpg(char: dict) -> dict:
-    a = char.get("attr", {})
+    a = char.get("attr") if isinstance(char.get("attr"), dict) else {}
     s = a.get("str", BASE_ATTR)
     ag = a.get("agi", BASE_ATTR)
     sp = a.get("spr", BASE_ATTR)
     ch = char.get("charm", "C")
     lu = char.get("luck", "C")
-    race = char.get("race") or {}
-    rb = race.get("attr_bonus", {})
-    s += rb.get("str", 0)
-    ag += rb.get("agi", 0)
-    sp += rb.get("spr", 0)
-    job = char.get("job") or {}
-    jb = job.get("attr_bonus", {})
-    s += jb.get("str", 0)
-    ag += jb.get("agi", 0)
-    sp += jb.get("spr", 0)
-    s = max(1, min(MAX_ATTR, s))
-    ag = max(1, min(MAX_ATTR, ag))
-    sp = max(1, min(MAX_ATTR, sp))
+    race = char.get("race") if isinstance(char.get("race"), dict) else {}
+    rb = race.get("attr_bonus") if isinstance(race.get("attr_bonus"), dict) else {}
+    s += rb.get("str", 0) if isinstance(rb.get("str", 0), (int, float)) else 0
+    ag += rb.get("agi", 0) if isinstance(rb.get("agi", 0), (int, float)) else 0
+    sp += rb.get("spr", 0) if isinstance(rb.get("spr", 0), (int, float)) else 0
+    job = char.get("job") if isinstance(char.get("job"), dict) else {}
+    jb = job.get("attr_bonus") if isinstance(job.get("attr_bonus"), dict) else {}
+    s += jb.get("str", 0) if isinstance(jb.get("str", 0), (int, float)) else 0
+    ag += jb.get("agi", 0) if isinstance(jb.get("agi", 0), (int, float)) else 0
+    sp += jb.get("spr", 0) if isinstance(jb.get("spr", 0), (int, float)) else 0
+    try:
+        s = max(1, min(MAX_ATTR, int(s)))
+        ag = max(1, min(MAX_ATTR, int(ag)))
+        sp = max(1, min(MAX_ATTR, int(sp)))
+    except (TypeError, ValueError):
+        s = ag = sp = BASE_ATTR
     char["hp"] = _calc_hp(s)
     char["mp"] = _calc_mp(sp)
     char["power"] = _calc_power(s, ag, sp, ch, lu)
+    # 战力锚点覆盖：管理员手动锁定的战力（如神明级 9999）优先于公式计算
+    override = char.get("power_override")
+    if isinstance(override, (int, float)) and not isinstance(override, bool) and override > 0:
+        char["power"] = max(0, min(GOD_POWER, int(override)))
     return char
 
 
@@ -232,11 +263,23 @@ def _render_rpg_sheet(char: dict) -> str:
         f"✨ 魅力：{char.get('charm', '?')}  🍀 幸运：{char.get('luck', '?')}",
     ]
     race = char.get("race")
-    if race:
+    if isinstance(race, dict) and race.get("name"):
         lines.append(f"👤 种族：{race.get('name', '?')}")
+        passive_names = _trait_names(race.get("innate_passives"))
+        if passive_names:
+            lines.append(f"   ✦ 天赋：{passive_names}")
+        negative_names = _trait_names(race.get("innate_negatives"), limit=3)
+        if negative_names:
+            lines.append(f"   ✧ 负面：{negative_names}")
     job = char.get("job")
-    if job:
+    if isinstance(job, dict) and job.get("name"):
         lines.append(f"🏆 职业：{job.get('name', '?')}")
+        job_skills = job.get("job_skills") if isinstance(job.get("job_skills"), list) else []
+        skill_list = [s for s in job_skills if isinstance(s, dict) and str(s.get("name") or "").strip()]
+        if not skill_list and isinstance(job.get("job_skill"), dict) and str(job["job_skill"].get("name") or "").strip():
+            skill_list = [job["job_skill"]]
+        if skill_list:
+            lines.append(f"   ✦ 专属技能：{'、'.join(str(s.get('name')).strip() for s in skill_list[:3])}")
     skills = char.get("skills", {})
     active = skills.get("active", [])
     if active:

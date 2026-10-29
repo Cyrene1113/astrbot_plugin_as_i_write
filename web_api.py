@@ -13,6 +13,7 @@ import binascii
 import copy
 import json
 import re
+import time
 from collections.abc import AsyncIterator
 from pathlib import Path
 from typing import Any, Callable
@@ -24,6 +25,7 @@ try:
 except Exception:  # pragma: no cover - 旧版基座没有 astrbot.api.web 模块
     astrbot_web = None  # type: ignore[assignment]
 
+from . import ai_gen
 from .chara_card_v3 import (
     character_from_ccv3,
     character_from_png,
@@ -36,9 +38,31 @@ from .lore import normalize_character, normalize_world
 from .render_pipeline import apply_render_scripts
 
 try:
-    from .archetypes import normalize_archetype
+    from .archetypes import BUILTIN_TEMPLATE_REV, normalize_archetype
 except Exception:  # pragma: no cover - archetypes.py 由并行任务稍后落地，未就绪时不阻断插件加载
+    BUILTIN_TEMPLATE_REV = 1  # type: ignore[assignment]
     normalize_archetype = None  # type: ignore[assignment]
+
+try:
+    from .rpg import (
+        GRADE_TIER,
+        MAX_ACTIVE_SKILLS,
+        MAX_ATTR,
+        MAX_PASSIVE_SKILLS,
+        _ensure_rpg,
+        _recalc_rpg,
+    )
+except Exception:  # pragma: no cover - rpg.py 未就绪时不阻断插件加载
+    GRADE_TIER = ("F", "E", "D", "C", "B", "A", "A+", "S")  # type: ignore[assignment]
+    MAX_ACTIVE_SKILLS = 3  # type: ignore[assignment]
+    MAX_PASSIVE_SKILLS = 3  # type: ignore[assignment]
+    MAX_ATTR = 1000  # type: ignore[assignment]
+
+    def _ensure_rpg(char):  # type: ignore[misc]
+        return char
+
+    def _recalc_rpg(char):  # type: ignore[misc]
+        return char
 
 ROUTE_BASE = f"/{PLUGIN_ID}"
 PLUGIN_TITLE = "如我所书"
@@ -64,6 +88,7 @@ _CONFIG_INT_KEYS = (
     "group_max_players",
     "group_max_clues_per_round",
     "lore_content_budget",
+    "ai_gen_timeout",
 )
 _CONFIG_BOOL_KEYS = ("enable_settle_extract", "enable_dice_judgment")
 _CONFIG_STR_KEYS = ("default_theme", "kb_name")
@@ -90,81 +115,17 @@ def _schema_defaults(schema: dict[str, Any]) -> dict[str, Any]:
     return {k: v["default"] for k, v in schema.items() if isinstance(v, dict) and "default" in v}
 
 
-def _split_csv_text(value: Any) -> list[str]:
-    """把逗号/顿号/斜杠分隔的文本拆成干净列表；列表输入原样清洗。"""
-    if isinstance(value, list):
-        return [str(item).strip() for item in value if str(item).strip()]
-    if not value:
-        return []
-    return [part.strip() for part in re.split(r"[,，、/|｜]", str(value)) if part.strip()]
-
-
 def _normalize_legacy_world(name: str, world: Any) -> dict[str, Any]:
     """把旧版世界观数据补齐为 WebUI 使用的新结构。
 
-    旧指令投稿通常只保存 content / easter_eggs；中间版本又出现过
-    power_tier、plot_nodes 等顶层字段。这里保留原字段，同时补齐
-    overview / eggs / plotlines / clues / locations / factions，避免后台编辑
-    时出现"类型、描述、标签、线索、地点、势力、剧情线全空"。
-    现网数据仍在使用 plot_nodes 兼容分支，不可移除。
+    v1.5.0 起 overview / npc / plotlines / clues / locations / factions 与
+    旧 plot_nodes、content→entries 的兼容迁移统一收拢到
+    ``lore.normalize_world``，本函数仅保留兼容委托（现网数据仍在使用，
+    调用点不可移除）。
     """
     if not isinstance(world, dict):
         world = {"content": str(world)}
-    normalized = copy.deepcopy(world)
-    content = str(normalized.get("content", "") or "").strip()
-
-    overview = normalized.get("overview")
-    if not isinstance(overview, dict):
-        overview = {}
-    overview.setdefault("title", normalized.get("title") or normalized.get("_name") or name)
-    overview.setdefault("type", normalized.get("type") or "")
-    overview.setdefault("description", normalized.get("description") or content)
-    overview.setdefault("tags", _split_csv_text(normalized.get("tags")))
-    overview.setdefault("power_tier", normalized.get("power_tier") or "")
-    overview.setdefault("power_reference", normalized.get("power_reference") or "")
-    normalized["overview"] = overview
-
-    if "eggs" not in normalized:
-        legacy_eggs = normalized.get("easter_eggs", [])
-        eggs: list[dict[str, Any]] = []
-        if isinstance(legacy_eggs, list):
-            for item in legacy_eggs:
-                if isinstance(item, dict):
-                    eggs.append(item)
-                elif str(item).strip():
-                    eggs.append({"text": str(item).strip(), "trigger_condition": "", "reward": ""})
-        normalized["eggs"] = eggs
-
-    if "plotlines" not in normalized:
-        plotlines: list[dict[str, Any]] = []
-        for node in normalized.get("plot_nodes", []) if isinstance(normalized.get("plot_nodes"), list) else []:
-            if not isinstance(node, dict):
-                continue
-            stage = {
-                "title": node.get("title", ""),
-                "description": node.get("summary") or node.get("description", ""),
-                "trigger": node.get("trigger", ""),
-                "clues": _split_csv_text(node.get("related_clues") or node.get("clues")),
-                "choices": [],
-            }
-            plotlines.append({
-                "title": node.get("title", "未命名剧情线"),
-                "type": node.get("type", "支线"),
-                "summary": node.get("summary") or node.get("description", ""),
-                "stages": [stage],
-                "related_npc": _split_csv_text(node.get("related_npc")),
-                "day": node.get("day"),
-                "can_player_intervene": node.get("can_player_intervene"),
-            })
-        normalized["plotlines"] = plotlines
-
-    for key in ("npc", "clues", "locations", "factions"):
-        if not isinstance(normalized.get(key), list):
-            normalized[key] = []
-
-    normalized.setdefault("content", content or overview.get("description", ""))
-    normalized.setdefault("_name", name)
-    return normalize_world(normalized, name=name)
+    return normalize_world(world, name=name)
 
 
 def _as_bool(value: Any) -> bool:
@@ -172,6 +133,76 @@ def _as_bool(value: Any) -> bool:
     if isinstance(value, str):
         return value.strip().lower() not in ("", "0", "false", "no", "off", "否")
     return bool(value)
+
+
+def _sanitize_character(char: dict) -> dict:
+    """清洗 WebUI 提交的角色卡：数值钳制、评级校验、能力上限，然后补齐并重算 RPG 层。
+
+    管理员可在页面调整一切字段；此处只拦明显非法值，保证落盘数据永远可被
+    冒险流程安全消费。
+    """
+    merged = dict(char if isinstance(char, dict) else {})
+    # ── 三维属性：int，1 ~ MAX_ATTR（显式 0 钳到下限 1，非法回退 5）──
+    attr = merged.get("attr") if isinstance(merged.get("attr"), dict) else {}
+    for key in ("str", "agi", "spr"):
+        raw = attr.get(key, 5)
+        try:
+            value = int(raw)
+        except (TypeError, ValueError):
+            value = 5
+        attr[key] = max(1, min(MAX_ATTR, value))
+    merged["attr"] = attr
+    # ── 魅力/幸运：必须是合法评级，非法回退 C ──
+    for key in ("charm", "luck"):
+        value = str(merged.get(key) or "").strip().upper()
+        merged[key] = value if value in GRADE_TIER else "C"
+    # ── 布尔标记 ──
+    for key in ("has_adventured", "is_random"):
+        if key in merged:
+            merged[key] = _as_bool(merged.get(key))
+    # ── 战力锚点覆盖：留空/0 清除，恢复公式自动计算 ──
+    if "power_override" in merged:
+        override = merged.get("power_override")
+        try:
+            override_num = int(override)
+        except (TypeError, ValueError):
+            override_num = 0
+        if override_num > 0:
+            merged["power_override"] = max(0, min(9999, override_num))
+        else:
+            merged.pop("power_override", None)
+    # ── 能力标签：结构化为 {name, desc, mastery, lv}，超限截断 ──
+    skills = merged.get("skills") if isinstance(merged.get("skills"), dict) else {}
+    for group, cap, fallback_mastery in (
+        ("active", MAX_ACTIVE_SKILLS, "生疏"),
+        ("passive", MAX_PASSIVE_SKILLS, "常驻"),
+    ):
+        items = skills.get(group) if isinstance(skills.get(group), list) else []
+        cleaned: list[dict] = []
+        for item in items:
+            if isinstance(item, dict):
+                name = str(item.get("name") or "").strip()
+                if not name:
+                    continue
+                cleaned.append({
+                    "name": name,
+                    "desc": str(item.get("desc") or ""),
+                    "mastery": str(item.get("mastery") or "").strip() or fallback_mastery,
+                    "lv": item.get("lv", 1 if group == "active" else 0),
+                })
+            elif str(item or "").strip():
+                cleaned.append({"name": str(item).strip(), "desc": "", "mastery": fallback_mastery,
+                                "lv": 1 if group == "active" else 0})
+        skills[group] = cleaned[:cap]
+    merged["skills"] = skills
+    result = normalize_character(merged)
+    _ensure_rpg(result)
+    now = time.time()
+    if not merged.get("created_at"):
+        result["created_at"] = now
+    result["updated_at"] = now
+    _recalc_rpg(result)
+    return result
 
 
 # ════════════════════════════════════════════════
@@ -221,6 +252,9 @@ class AsIWriteWebAPI:
             ("/render-scripts", self._render_scripts, ["GET"], "读取正则渲染脚本"),
             ("/render-scripts/save", self._render_scripts_save, ["POST"], "保存正则渲染脚本"),
             ("/render-scripts/test", self._render_scripts_test, ["POST"], "测试正则渲染脚本"),
+            ("/ai/generate", self._ai_generate, ["POST"], "AI 一键生成（world/archetype/character 草稿）"),
+            ("/ai/complete/world", self._ai_complete_world, ["POST"], "AI 补全世界观缺失板块（返回草稿）"),
+            ("/ai/expand", self._ai_expand, ["POST"], "AI 润色文本字段"),
             ("/events", self._events, ["GET"], "SSE 实时事件流"),
         ]
 
@@ -256,6 +290,115 @@ class AsIWriteWebAPI:
             except Exception:
                 pass
         self._subscribers.clear()
+
+    # ── AI 助手（生成/补完/润色，一律返回草稿，由管理员确认后另行保存） ──
+
+    async def _call_llm(self, prompt: str, session_id: str) -> tuple[bool, str]:
+        """调用当前启用的 LLM；返回 (成功与否, 文本或错误说明)。"""
+        try:
+            provider = self.plugin.context.get_using_provider()
+        except Exception:
+            provider = None
+        if provider is None:
+            return False, "暂无可用 LLM 服务：请先在面板「服务提供商」配置并启用模型"
+        try:
+            timeout = max(15, int(getattr(self.plugin, "ai_gen_timeout", 120) or 120))
+        except (TypeError, ValueError):
+            timeout = 120
+        try:
+            resp = await asyncio.wait_for(
+                provider.text_chat(prompt=prompt, session_id=session_id, contexts=[]),
+                timeout=timeout,
+            )
+            return True, (resp.completion_text or "")
+        except asyncio.TimeoutError:
+            return False, f"生成超时（>{timeout} 秒）。可在插件配置调大 ai_gen_timeout 后重试。"
+        except Exception as exc:
+            return False, f"LLM 调用失败: {exc}"
+
+    async def _ai_generate(self):
+        try:
+            body = await self._json_body()
+            task = str(body.get("task") or "").strip()
+            idea = str(body.get("prompt") or "").strip()
+            name = str(body.get("name") or "").strip()
+            type_ = str(body.get("type") or "race").strip().lower()
+            if task not in ("world", "archetype", "character"):
+                return self._fail("task 仅支持 world / archetype / character", 400)
+            if not idea:
+                return self._fail("请先填写生成灵感或要求", 400)
+            base_prompt = {
+                "world": ai_gen.WORLD_GEN_PROMPT,
+                "archetype": ai_gen.ARCHETYPE_GEN_PROMPT,
+                "character": ai_gen.CHARACTER_GEN_PROMPT,
+            }[task]
+            full = base_prompt + "\n【用户灵感/要求】\n" + idea[:1200]
+            if task == "archetype":
+                if type_ not in ("race", "job"):
+                    type_ = "race"
+                full += "\n【条目类型】\n" + ("race（种族）" if type_ == "race" else "job（职业）")
+            if task == "world" and name:
+                full += "\n【世界名称】\n" + name[:60]
+            ok, text = await self._call_llm(full, f"aiweb_gen_{task}")
+            if not ok:
+                return self._fail(text, 502)
+            payload = ai_gen.parse_llm_json(text)
+            if payload is None:
+                return self._fail("模型没有返回有效的 JSON 草稿，请重试或更换模型", 502)
+            if task == "world":
+                draft = ai_gen.normalize_world_draft(payload, name)
+            elif task == "archetype":
+                draft = ai_gen.normalize_archetype_draft(payload, name, type_)
+            else:
+                draft = ai_gen.normalize_character_draft(payload)
+            return {"ok": True, "draft": draft}
+        except Exception as exc:
+            return self._fail(f"AI 生成失败: {exc}")
+
+    async def _ai_complete_world(self):
+        try:
+            body = await self._json_body()
+            name = self._query("name") or str(body.get("name") or "").strip()
+            world = (getattr(self.plugin, "_worlds", None) or {}).get(name)
+            if world is None:
+                return self._fail(f"未找到世界观「{name}」", 404)
+            missing = ai_gen.missing_world_sections(world)
+            if not missing:
+                return {"ok": True, "world": world, "added": [], "message": "各板块都已完整，无需补全"}
+            summary = ai_gen.world_summary_for_complete(world, name)
+            prompt = (
+                ai_gen.WORLD_COMPLETE_PROMPT
+                + "\n【已有世界观摘要】\n" + summary
+                + "\n【需要补全的板块】\n" + "、".join(missing)
+                + "\n只输出这些板块对应字段，其余板块不要生成。"
+            )
+            ok, text = await self._call_llm(prompt, "aiweb_complete_world")
+            if not ok:
+                return self._fail(text, 502)
+            payload = ai_gen.parse_llm_json(text)
+            if payload is None:
+                return self._fail("模型没有返回有效的 JSON 草稿，请重试或更换模型", 502)
+            merged, added = ai_gen.merge_world_draft(world, payload)
+            merged = normalize_world(merged, name=name)
+            return {"ok": True, "world": merged, "added": added}
+        except Exception as exc:
+            return self._fail(f"AI 补全失败: {exc}")
+
+    async def _ai_expand(self):
+        try:
+            body = await self._json_body()
+            text = str(body.get("text") or "").strip()
+            if not text:
+                return self._fail("缺少要润色的文本", 400)
+            if len(text) > 2000:
+                return self._fail("文本过长（>2000 字），请分段润色", 400)
+            ok, out = await self._call_llm(ai_gen.EXPAND_PROMPT + text, "aiweb_expand")
+            if not ok:
+                return self._fail(out, 502)
+            cleaned = out.strip().strip('"“”「」')
+            return {"ok": True, "text": cleaned[:2000]}
+        except Exception as exc:
+            return self._fail(f"AI 润色失败: {exc}")
 
     # ── SSE 实时推送 ──
 
@@ -434,8 +577,8 @@ class AsIWriteWebAPI:
             characters = self.plugin._characters
             current = characters.setdefault(uid, {})
             current.update(body)
-            # normalize_character 会剥离 skill_points / attr_locked / mp_cost 等遗留字段
-            characters[uid] = normalize_character(current)
+            # 清洗数值/评级/能力上限，normalize 剥离遗留字段，最后重算 HP/MP/战力
+            characters[uid] = _sanitize_character(current)
             _save_json(self.plugin._characters_path, characters)
             self.notify("characters_changed", {"uid": uid, "source": "webui"})
             return {"ok": True, "uid": uid}
@@ -509,6 +652,11 @@ class AsIWriteWebAPI:
             if normalize_archetype is None:
                 return self._fail("图鉴库模块（archetypes.py）尚未就绪", 500)
             arche = normalize_archetype(body, name=name, type_=type_)
+            # 盖章：rev 达标的内置/自定义条目不会被启动迁移替换，管理员修改得以保留
+            arche["template_rev"] = BUILTIN_TEMPLATE_REV
+            arche["updated_at"] = time.time()
+            if not arche.get("created_at"):
+                arche["created_at"] = time.time()
             self.plugin._archetypes[name] = arche
             _save_json(self.plugin._archetypes_path, self.plugin._archetypes)
             self.notify("archetypes_changed", {"name": name})
@@ -544,6 +692,7 @@ class AsIWriteWebAPI:
                 "kb_name": getattr(p, "_kb_name", ""),
                 "enable_settle_extract": p.enable_settle_extract,
                 "enable_dice_judgment": p.enable_dice_judgment,
+                "ai_gen_timeout": int(getattr(p, "ai_gen_timeout", 120) or 120),
             })
             return {
                 "schema": schema,

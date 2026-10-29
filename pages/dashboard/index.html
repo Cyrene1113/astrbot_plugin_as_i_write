@@ -36,6 +36,8 @@ h2{font-size:20px;margin-bottom:18px;color:var(--accent)}
 .btn:hover{border-color:var(--accent)}
 .btn-p{background:var(--accent);color:#0f0e17;border-color:var(--accent)}
 .btn-p:hover{opacity:.85}
+.btn-ai{border-color:rgba(156,207,216,0.5);color:var(--accent2)}
+.btn-ai:hover{background:rgba(156,207,216,0.12);border-color:var(--accent2)}
 .btn-d{border-color:var(--danger);color:var(--danger)}
 .btn-d:hover{background:rgba(235,111,146,0.1)}
 .btn-sm{padding:4px 10px;font-size:12px}
@@ -50,9 +52,9 @@ h2{font-size:20px;margin-bottom:18px;color:var(--accent)}
 .banner.show{display:block}
 .modalbg{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px);z-index:1000;align-items:center;justify-content:center}
 .modalbg.show{display:flex}
-.modal{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:24px;width:90%;max-width:620px;max-height:80vh;overflow-y:auto}
+.modal{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:24px;width:90%;max-width:680px;max-height:84vh;overflow-y:auto}
 .modal h3{font-size:16px;margin-bottom:14px}
-.ma{display:flex;gap:10px;justify-content:flex-end;margin-top:18px}
+.ma{display:flex;gap:10px;justify-content:flex-end;margin-top:18px;flex-wrap:wrap}
 .toast{position:fixed;bottom:24px;right:24px;padding:10px 18px;border-radius:8px;background:var(--card);border:1px solid var(--border);color:var(--text);font-size:13px;transform:translateY(100px);opacity:0;transition:.3s;z-index:2000;max-width:70vw}
 .toast.show{transform:translateY(0);opacity:1}
 .toast.good{border-color:var(--good)}.toast.bad{border-color:var(--danger)}
@@ -61,24 +63,34 @@ h2{font-size:20px;margin-bottom:18px;color:var(--accent)}
 .sb2{display:inline-block;padding:2px 9px;border-radius:20px;font-size:11px}
 .sb2.go{background:rgba(62,143,176,0.2);color:var(--good)}
 .sb2.pa{background:rgba(196,167,231,0.13);color:var(--accent)}
-
-.rchart{display:flex;justify-content:center;margin:10px 0}
-.rchart canvas{width:200px;height:200px;filter:drop-shadow(0 0 8px rgba(196,167,231,0.3))}
-
+.search{display:flex;align-items:center;gap:8px;margin-bottom:14px}
+.search input{flex:0 1 320px;padding:8px 12px;background:var(--input);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px}
+.search input:focus{outline:none;border-color:var(--accent)}
 
 .tabs{display:flex;gap:2px;margin-bottom:14px;border-bottom:1px solid var(--border);padding-bottom:0;flex-wrap:wrap}
 .tabs button{padding:7px 14px;border:1px solid transparent;border-bottom:none;border-radius:6px 6px 0 0;background:transparent;color:var(--dim);cursor:pointer;font-size:12px;transition:.2s}
 .tabs button:hover{color:var(--text)}
 .tabs button.act{background:var(--card);border-color:var(--border);color:var(--accent);margin-bottom:-1px}
 .tc{display:none}.tc.act{display:block}
-.npc-item{display:flex;align-items:center;gap:8px;padding:8px 10px;border:1px solid var(--border);border-radius:8px;margin-bottom:6px}
-.npc-item .kv{flex:1;font-size:12px;min-width:0}
-.npc-item .kv strong{font-size:13px}
+.item{display:flex;align-items:center;gap:8px;padding:8px 10px;border:1px solid var(--border);border-radius:8px;margin-bottom:6px}
+.item .kv{flex:1;font-size:12px;min-width:0}
+.item .kv strong{font-size:13px}
+.item .acts{display:flex;gap:4px;flex-shrink:0}
 .script-regex{display:inline-block;font-family:Consolas,Menlo,monospace;font-size:11px;background:var(--input);border:1px solid var(--border);border-radius:4px;padding:1px 6px;margin-top:3px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--accent2)}
 .script-repl{font-family:Consolas,Menlo,monospace;font-size:11px;color:var(--dim)}
 .test-out{margin-top:10px;padding:12px;background:var(--input);border:1px solid var(--border);border-radius:8px;font-size:12px;line-height:1.6;white-space:pre-wrap;word-break:break-word;max-height:260px;overflow-y:auto;font-family:Consolas,Menlo,monospace}
 .ckline{display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;margin-bottom:14px}
 .ckline input{width:auto}
+.rowitem{display:flex;gap:6px;align-items:center;margin-bottom:6px}
+.rowitem input{padding:7px 10px;background:var(--input);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:12px}
+.rowitem .rn{flex:0 0 130px}
+.rowitem .rd{flex:1}
+.rowitem button{padding:4px 9px;font-size:12px}
+.stages{border:1px dashed var(--border);border-radius:8px;padding:10px;margin-bottom:8px}
+.previewbox{background:var(--input);border:1px solid var(--border);border-radius:8px;padding:10px 12px;font-size:12px;line-height:1.7;color:var(--dim);margin-bottom:12px;white-space:pre-wrap}
+.previewbox b{color:var(--text)}
+.rchart{display:flex;justify-content:center;margin:10px 0}
+.rchart canvas{width:200px;height:200px;filter:drop-shadow(0 0 8px rgba(196,167,231,0.3))}
 
 </style>
 </head>
@@ -106,33 +118,42 @@ h2{font-size:20px;margin-bottom:18px;color:var(--accent)}
       <button data-t="job" onclick="aswitch('job')">职业库</button>
     </div>
     <div class="tc act" id="awc-world">
+      <div class="search"><input id="world-search" placeholder="🔍 搜索世界观（名称 / 描述 / 标签）" oninput="lw()"></div>
       <div style="display:flex;justify-content:flex-end;align-items:center;margin-bottom:18px;gap:10px;flex-wrap:wrap">
         <div><input id="world-import" type="file" accept="application/json" hidden onchange="importWorldFile(this)"><button class="btn" onclick="document.getElementById('world-import').click()">导入 V3</button> <button class="btn btn-p" onclick="we()">+ 新建</button></div>
       </div>
       <div class="grid" id="wl"></div>
     </div>
     <div class="tc" id="awc-race">
-      <div class="hintline">种族决定角色创建时的三维补正与天赋被动/负面；带「内置」徽章的条目由插件预置，删除后可重新手建。</div>
+      <div class="hintline">种族决定角色创建时的三维补正与天赋被动/负面；带「内置」徽章的条目由插件预置，可直接修改（修改后不会被版本升级覆盖）。AI 可一键生成新种族。</div>
+      <div class="search"><input id="race-search" placeholder="🔍 搜索种族（名称 / 描述 / 天赋）" oninput="la('race')"></div>
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;gap:10px;flex-wrap:wrap">
         <span style="font-size:13px;color:var(--dim)" id="ac-race"></span>
+        <button class="btn btn-ai" onclick="archAI('race')">🤖 AI 生成种族</button>
         <button class="btn btn-p" onclick="ae()">+ 新建种族</button>
       </div>
       <div class="grid" id="al-race"></div>
     </div>
     <div class="tc" id="awc-job">
-      <div class="hintline">职业决定角色创建时的三维补正与专属技能；带「内置」徽章的条目由插件预置，删除后可重新手建。</div>
+      <div class="hintline">职业决定角色创建时的三维补正与专属技能；带「内置」徽章的条目由插件预置，可直接修改。AI 可一键生成新职业。</div>
+      <div class="search"><input id="job-search" placeholder="🔍 搜索职业（名称 / 描述 / 技能）" oninput="la('job')"></div>
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;gap:10px;flex-wrap:wrap">
         <span style="font-size:13px;color:var(--dim)" id="ac-job"></span>
+        <button class="btn btn-ai" onclick="archAI('job')">🤖 AI 生成职业</button>
         <button class="btn btn-p" onclick="ae()">+ 新建职业</button>
       </div>
       <div class="grid" id="al-job"></div>
     </div>
   </div>
   <div class="page" id="p-characters">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;gap:10px;flex-wrap:wrap">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;gap:10px;flex-wrap:wrap">
       <h2 style="margin:0"><span class="ico-lg">C</span> 角色卡库</h2>
-      <div><span style="font-size:13px;color:var(--dim)" id="cc"></span> <input id="char-import" type="file" accept="application/json,image/png" hidden onchange="importCharacterFile(this)"><button class="btn" onclick="document.getElementById('char-import').click()">导入 JSON/PNG</button></div>
+      <div><span style="font-size:13px;color:var(--dim)" id="cc"></span>
+        <button class="btn btn-ai" onclick="charAI()">🤖 AI 生成角色</button>
+        <input id="char-import" type="file" accept="application/json,image/png" hidden onchange="importCharacterFile(this)"><button class="btn" onclick="document.getElementById('char-import').click()">导入 JSON/PNG</button>
+        <button class="btn btn-p" onclick="ce('')">+ 新建角色</button></div>
     </div>
+    <div class="search"><input id="char-search" placeholder="🔍 搜索角色（UID / 名字 / 描述 / 种族 / 职业）" oninput="lc()"></div>
     <div class="grid" id="cl"></div>
   </div>
   <div class="page" id="p-saves">
@@ -181,12 +202,14 @@ h2{font-size:20px;margin-bottom:18px;color:var(--accent)}
 /* ================= 基础工具 ================= */
 function esc(s){return String(s===undefined||s===null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;')}
 function jsq(s){return String(s===undefined||s===null?'':s).replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/"/g,'&quot;').replace(/\r/g,'').replace(/\n/g,'\\n')}
-function uid(){try{if(window.crypto&&typeof window.crypto.randomUUID==='function')return window.crypto.randomUUID()}catch(e){}return 'id-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,10)}
+function uid(){try{if(window.crypto&&typeof window.crypto.randomUUID==='function')return window.crypto.randomUUID().replace(/-/g,'')}catch(e){}return 'id-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,10)}
 function gv(id){const el=document.getElementById(id);return el?el.value:''}
 function clampText(s,n){s=String(s===undefined||s===null?'':s);return s.length>n?s.slice(0,n)+'…':s}
 const tt=(m,t='good')=>{const e=document.getElementById('t');e.textContent=m;e.className='toast '+t;setTimeout(()=>e.classList.add('show'),10);setTimeout(()=>e.classList.remove('show'),2500)};
 function showBanner(msg){const b=document.getElementById('banner');b.textContent=msg;b.classList.add('show')}
 function withTimeout(p,ms){return Promise.race([p,new Promise((_,rej)=>setTimeout(()=>rej(new Error('初始化超时')),ms))])}
+function csv(v){return String(v===undefined||v===null?'':v).split(/[\n,，、]+/).map(s=>s.trim()).filter(Boolean)}
+function structTraits(list){return (Array.isArray(list)?list:[]).map(t=>typeof t==='string'?{name:t,desc:''}:{name:String(t&&t.name||'').trim(),desc:String(t&&t.desc||'').trim()}).filter(t=>t.name)}
 
 /* ================= 桥接层 ================= */
 let P=null;               // window.AstrBotPluginPage
@@ -196,7 +219,7 @@ const ap=(endpoint,body)=>P.apiPost(endpoint,body||{});
 
 /* 模态框：扩展为可携带“取消回调”，供 promise 化的 confirm/prompt 使用 */
 let _modalCancel=null;
-const mo=(html,onCancel)=>{document.getElementById('mct').innerHTML=html;document.getElementById('mbg').classList.add('show');_modalCancel=onCancel||null};
+const mo=(html,onCancel)=>{document.getElementById('mct').innerHTML=html;document.getElementById('mbg').classList.add('show');_modalCancel=onCancel||null;document.getElementById('mct').parentElement.scrollTop=0};
 const mc=()=>{document.getElementById('mbg').classList.remove('show');const cb=_modalCancel;_modalCancel=null;if(cb)cb()};
 document.getElementById('mbg').onclick=e=>{if(e.target===e.currentTarget)mc()};
 
@@ -222,13 +245,13 @@ function uiPrompt(title,label,val){return new Promise(res=>{
 /* ================= 全局状态 ================= */
 var _activeTab='worlds';
 let _wtemp=null,_wsource='';                 // 世界观编辑暂存
-let _ctemp=null,_cuid='';                    // 角色编辑暂存
+let _ctemp=null,_cuid='',_cIsNew=false;      // 角色编辑暂存
 let _savesData={};                           // 存档列表缓存（供“查看”使用）
-let _charsData={};                           // 角色列表缓存（判断 UID 是否已存在）
+let _charsData={};                           // 角色列表缓存
 let _scriptsData=[];                         // 渲染脚本缓存
 let _editScriptId=null;                      // 当前编辑的脚本 id（null=新增）
 let _cfgTypes={};                            // 配置键 → 控件类型
-let _cfgWorlds=[];                           // 世界观名列表（供 default_world 下拉）
+let _cfgWorlds=[];                           // 世界观名列表
 var _suppress={};                            // 本地变更抑制窗口（防 SSE 重复刷新）
 function markLocal(type){_suppress[type]=Date.now()}
 function suppressed(type){return _suppress[type]&&Date.now()-_suppress[type]<5000}
@@ -266,7 +289,7 @@ function handleEvent(msg){
   if(!EVENT_LABEL.hasOwnProperty(type))return;
   if(suppressed(type))return; // 自己刚改过，SSE 事件为回声
   if(type==='worlds_changed'){
-    if(_activeTab==='worlds')lw();
+    if(_activeTab==='worlds'&&_subTab==='world')lw();
     refreshConfigWorldOptions();
   }else if(type==='characters_changed'){
     if(_activeTab==='characters')lc();
@@ -282,75 +305,89 @@ function handleEvent(msg){
   tt(EVENT_LABEL[type]);
 }
 
-/* ================= 世界观库 ================= */
+/* ══════════════════════════════════════════════
+   世界观库
+   ══════════════════════════════════════════════ */
+function _matchSearch(hay,needle){if(!needle)return true;return String(hay||'').toLowerCase().indexOf(needle)>=0}
 async function lw(){const el=document.getElementById('wl');el.innerHTML='<div class="loading">加载中...</div>';
   try{const d=await ag('worlds');
     const e=entriesOf(d);_cfgWorlds=e.map(([k])=>k);
+    const kw=(gv('world-search')||'').trim().toLowerCase();
+    const filtered=e.filter(([n,w])=>!kw||_matchSearch(n,kw)||_matchSearch(w&&w.overview&&w.overview.description||w&&w.content,kw)||_matchSearch(w&&w.overview&&w.overview.tags&&w.overview.tags.join(','),kw));
     if(!e.length){el.innerHTML='<div class="loading">暂无世界观，点击右上角「+ 新建」或直接在聊天里投稿</div>';return}
-    el.innerHTML=e.map(([n,w])=>{
+    if(!filtered.length){el.innerHTML='<div class="loading">没有匹配「'+esc(kw)+'」的世界观</div>';return}
+    el.innerHTML=filtered.map(([n,w])=>{
       const ov=w&&w.overview||{};
       const title=ov.title||w.title||n;
       const desc=(ov.description||w.description||w.content||'');
       const npcCount=(w.npc||[]).length;
       const plotCount=(w.plotlines||w.plot_nodes||[]).length;
+      const clueCount=(w.clues||[]).length;
       const eggCount=(w.eggs||w.easter_eggs||[]).length;
-      const badge=w.overview?'':' <span class="badge" style="background:rgba(144,140,170,0.2);color:var(--dim)">基础</span>';
-      return `<div class="card" onclick="we('${jsq(n)}')"><h3>${esc(title)}${badge}</h3>
+      const entryCount=(w.entries||[]).length;
+      const tier=ov.power_tier?' <span class="badge" style="background:rgba(246,193,119,0.14);color:var(--warn)">⚖️'+esc(ov.power_tier)+'</span>':'';
+      return `<div class="card" onclick="we('${jsq(n)}')"><h3>${esc(title)}</h3>
       ${desc?`<p>${esc(clampText(desc,90))}</p>`:'<p style="color:var(--dim)">暂无描述</p>'}
-      <div><span class="badge">${npcCount} NPC</span><span class="badge">${plotCount} 剧情线</span><span class="badge">${eggCount} 彩蛋</span></div>
+      <div><span class="badge">${npcCount} 人物</span><span class="badge">${plotCount} 剧情</span><span class="badge">${clueCount} 伏笔</span><span class="badge">${eggCount} 彩蛋</span><span class="badge">${entryCount} 条目</span>${tier}</div>
       <div style="margin-top:8px"><button class="btn btn-sm" onclick="event.stopPropagation();exportWorld('${jsq(n)}')">导出 V3</button> <button class="btn btn-sm btn-d" onclick="event.stopPropagation();dw('${jsq(n)}')">删除</button></div></div>`;
     }).join('')}
   catch(e){el.innerHTML='<div class="loading" style="color:var(--danger)">'+esc(e.message)+'</div>'}}
 
-function wtab(act){document.querySelectorAll('#mct .tc').forEach(e=>e.classList.remove('act'));document.querySelectorAll('#mct .tabs button').forEach(e=>e.classList.remove('act'));
-  const el=document.getElementById('tc-'+act);if(el)el.classList.add('act');
-  const bt=document.querySelector('#mct .tabs button[data-t="'+act+'"]');if(bt)bt.classList.add('act')}
+function wtab(act){
+  document.querySelectorAll('#mct .tabs button').forEach(e=>e.classList.remove('act'));
+  document.querySelectorAll('#mct .tc').forEach(e=>e.classList.remove('act'));
+  const bt=document.querySelector('#mct .tabs button[data-t="'+act+'"]');if(bt)bt.classList.add('act');
+  const el=document.getElementById('wtc-'+act);if(el)el.classList.add('act');
+}
 
+/* ── 世界观编辑器 ── */
+let _wNpcEdit=-1,_wPlotEdit=-1,_wClueEdit=-1,_wLocEdit=-1,_wFacEdit=-1,_wEggEdit=-1;
 function wr(){
-  const ov=_wtemp.overview||{},np=_wtemp.npc||[],pl=(_wtemp.plotlines||_wtemp.plot_nodes||[]),cl=_wtemp.clues||[],eg=(_wtemp.eggs||(_wtemp.easter_eggs||[]).map(e=>typeof e==='string'?{text:e,trigger_condition:'',reward:''}:e)),entries=_wtemp.entries||[];
-  const entryHtml=entries.map(e=>'<div class="npc-item"><div class="kv"><strong>'+esc(e.name||'未命名条目')+'</strong> <span class="badge">'+(e.enabled!==false?'启用':'禁用')+'</span> '+(e.constant?'<span class="badge">常驻</span>':'')+'<br><span style="color:var(--dim)">关键词: '+esc((e.keys||[]).join(', ')||'无')+' | 优先级 '+(e.priority===undefined||e.priority===null?10:e.priority)+' | 顺序 '+(e.insertion_order===undefined||e.insertion_order===null?100:e.insertion_order)+' | '+esc(e.insertion_position||'system')+'</span></div><button class="btn btn-sm" onclick="wentryEdit(\''+jsq(e.id)+'\')">编辑</button><button class="btn btn-sm btn-d" onclick="wentryDel(\''+jsq(e.id)+'\')">删除</button></div>').join('');
-  const eggHtml=eg.map((e,i)=>'<div class="npc-item"><div class="kv"><strong>'+esc(e.text||'')+'</strong><br><span style="color:var(--dim)">触发: '+esc(e.trigger_condition||'无')+'</span></div><button class="btn btn-sm btn-d" onclick="weggDel('+i+')">×</button></div>').join('');
-  const npcHtml=np.map((n,i)=>{const pts=n.power?('战力 '+n.power):((n.power_tag||''));const pb=pts?' <span class="badge" style="background:rgba(156,207,216,0.15);color:var(--accent2)">'+esc(pts)+'</span>':'';const tr=(n.traits||[]).length?'<br><span style="color:var(--accent2);font-size:11px">🏷️ '+esc((n.traits||[]).slice(0,3).join(' · '))+((n.traits||[]).length>3?' …':'')+'</span>':'';const ds=(n.dialog_samples||[]).length?'<br><span style="color:var(--dim);font-size:11px">💬 "'+esc(clampText((n.dialog_samples||[])[0],30))+'"</span>':'';return '<div class="npc-item"><div class="kv"><strong>'+esc(n.name)+'</strong>'+pb+' <span class="badge">'+esc(n.alignment)+'</span>'+(n.is_key?' <span class="badge" style="background:rgba(235,111,146,0.2);color:var(--danger)">★关键</span>':'')+'<br><span style="color:var(--dim)">'+esc(n.title)+' - '+esc(clampText(n.description||'',50))+'</span>'+tr+ds+'</div><button class="btn btn-sm btn-d" onclick="wnpcDel('+i+')">×</button></div>'}).join('');
+  const ov=_wtemp.overview||{},np=_wtemp.npc||[],pl=(_wtemp.plotlines||[]),cl=_wtemp.clues||[],eg=_wtemp.eggs||[],entries=_wtemp.entries||[],locs=_wtemp.locations||[],facs=_wtemp.factions||[];
+  const tierOpts=['','凡人','超凡','神话'].map(t=>'<option value="'+t+'"'+((ov.power_tier||'')===t?' selected':'')+'>'+(t?t+'档':'(未设置)')+'</option>').join('');
+  const entryHtml=entries.map(e=>'<div class="item"><div class="kv"><strong>'+esc(e.name||'未命名条目')+'</strong> <span class="badge">'+(e.enabled!==false?'启用':'禁用')+'</span> '+(e.constant?'<span class="badge">常驻</span>':'')+'<br><span style="color:var(--dim)">关键词: '+esc((e.keys||[]).join(', ')||'无')+' | 优先级 '+(e.priority===undefined||e.priority===null?10:e.priority)+' | 顺序 '+(e.insertion_order===undefined||e.insertion_order===null?100:e.insertion_order)+' | '+esc(e.insertion_position||'system')+'</span></div><div class="acts"><button class="btn btn-sm" onclick="wentryEdit(\''+jsq(e.id)+'\')">编辑</button><button class="btn btn-sm btn-d" onclick="wentryDel(\''+jsq(e.id)+'\')">删除</button></div></div>').join('');
+  const npcHtml=np.map((n,i)=>{const pts=n.power?('战力 '+n.power):((n.power_tag||''));const pb=pts?' <span class="badge" style="background:rgba(156,207,216,0.15);color:var(--accent2)">'+esc(pts)+'</span>':'';const tr=(n.traits||[]).length?'<br><span style="color:var(--accent2);font-size:11px">🏷️ '+esc((n.traits||[]).slice(0,4).join(' · '))+'</span>':'';const ds=(n.dialog_samples||[]).length?'<br><span style="color:var(--dim);font-size:11px">💬 "'+esc(clampText((n.dialog_samples||[])[0],30))+'"</span>':'';return '<div class="item"><div class="kv"><strong>'+esc(n.name)+'</strong>'+pb+' <span class="badge">'+esc(n.alignment||'中立')+'</span>'+(n.is_key?' <span class="badge" style="background:rgba(235,111,146,0.2);color:var(--danger)">★关键</span>':'')+'<br><span style="color:var(--dim)">'+esc(n.title||'')+' - '+esc(clampText(n.description||'',50))+'</span>'+tr+ds+'</div><div class="acts"><button class="btn btn-sm" onclick="wnpcEdit('+i+')">编辑</button><button class="btn btn-sm btn-d" onclick="wnpcDel('+i+')">×</button></div></div>'}).join('');
   const plotHtml=pl.map((p,i)=>{
     const sg=(p.stages||[]);
-    const firstStage=sg.length?' <span style="color:var(--dim);font-size:11px">→ '+esc(clampText(sg[0].description||sg[0].title||'',25))+'</span>':'';
-    return '<div class="npc-item"><div class="kv"><strong>'+esc(p.title)+'</strong> <span class="badge">'+esc(p.type)+'</span><br><span style="color:var(--dim)">'+esc(clampText(p.summary||'',50))+' | '+sg.length+'阶段</span>'+firstStage+'</div><button class="btn btn-sm btn-d" onclick="wplotDel('+i+')">×</button></div>'
+    return '<div class="item"><div class="kv"><strong>'+esc(p.title)+'</strong> <span class="badge">'+esc(p.type||'支线')+'</span><br><span style="color:var(--dim)">'+esc(clampText(p.summary||'',55))+' | '+sg.length+'阶段</span>'+(p.related_npc&&p.related_npc.length?'<br><span style="color:var(--accent2);font-size:11px">👤 '+esc(p.related_npc.join(' · '))+'</span>':'')+'</div><div class="acts"><button class="btn btn-sm" onclick="wplotEdit('+i+')">编辑</button><button class="btn btn-sm btn-d" onclick="wplotDel('+i+')">×</button></div></div>'
   }).join('');
-  const clueHtml=cl.map((c,i)=>'<div class="npc-item"><div class="kv"><strong>'+esc(c.name)+'</strong> <span class="badge">'+esc(c.type)+'</span>'+(c.related_npc&&c.related_npc.length?' <span class="badge">👤'+esc(c.related_npc.join(' · '))+'</span>':'')+'<br><span style="color:var(--dim)">'+esc(clampText(c.content||'',55))+'</span>'+(c.unlocks&&c.unlocks.length?'<br><span style="color:var(--warn);font-size:11px">🔓 解锁: '+esc(c.unlocks.join(', '))+'</span>':'')+'</div><button class="btn btn-sm btn-d" onclick="wclueDel('+i+')">×</button></div>').join('');
+  const clueHtml=cl.map((c,i)=>'<div class="item"><div class="kv"><strong>'+esc(c.name)+'</strong> <span class="badge">'+esc(c.type||'物证')+'</span> <span class="badge" style="'+(c.revealed?'background:rgba(62,143,176,0.2);color:var(--good)':'background:rgba(246,193,177,0.15);color:var(--warn)')+'">'+(c.revealed?'已揭晓':'未揭晓')+'</span>'+(c.related_npc&&c.related_npc.length?' <span class="badge">👤'+esc(c.related_npc.join(' · '))+'</span>':'')+'<br><span style="color:var(--dim)">'+esc(clampText(c.content||'',55))+'</span>'+(c.unlocks&&c.unlocks.length?'<br><span style="color:var(--warn);font-size:11px">🔓 解锁: '+esc(c.unlocks.join(', '))+'</span>':'')+'</div><div class="acts"><button class="btn btn-sm" onclick="wclueEdit('+i+')">编辑</button><button class="btn btn-sm btn-d" onclick="wclueDel('+i+')">×</button></div></div>').join('');
+  const locHtml=locs.map((l,i)=>'<div class="item"><div class="kv"><strong>'+esc(l.name)+'</strong> <span class="badge">'+esc(l.type||'地标')+'</span>'+(l.is_important?' <span class="badge">★重要</span>':'')+'<br><span style="color:var(--dim)">'+esc(clampText(l.description||'',60))+'</span>'+(l.related_npcs&&l.related_npcs.length?'<br><span style="color:var(--accent2);font-size:11px">👥 '+esc(l.related_npcs.join(' · '))+'</span>':'')+'</div><div class="acts"><button class="btn btn-sm" onclick="wlocEdit('+i+')">编辑</button><button class="btn btn-sm btn-d" onclick="wlocDel('+i+')">×</button></div></div>').join('');
+  const facHtml=facs.map((f,i)=>'<div class="item"><div class="kv"><strong>'+esc(f.name)+'</strong> <span class="badge">'+esc(f.alignment||'中立')+'</span><br><span style="color:var(--dim)">'+esc(clampText(f.description||'',60))+'</span>'+(f.members&&f.members.length?'<br><span style="color:var(--accent2);font-size:11px">👤 '+esc(f.members.join(' · '))+'</span>':'')+(f.relations?'<br><span style="color:var(--dim);font-size:11px">🔗 '+esc(clampText(f.relations,40))+'</span>':'')+'</div><div class="acts"><button class="btn btn-sm" onclick="wfacEdit('+i+')">编辑</button><button class="btn btn-sm btn-d" onclick="wfacDel('+i+')">×</button></div></div>').join('');
+  const eggHtml=eg.map((e,i)=>'<div class="item"><div class="kv"><strong>'+esc(e.text||'')+'</strong><br><span style="color:var(--dim)">触发: '+esc(e.trigger_condition||'无')+(e.reward?'｜奖励: '+esc(e.reward):'')+'</span></div><div class="acts"><button class="btn btn-sm" onclick="weggEdit('+i+')">编辑</button><button class="btn btn-sm btn-d" onclick="weggDel('+i+')">×</button></div></div>').join('');
   return `<div class="tabs">
     <button class="act" data-t="basic" onclick="wtab('basic')">基础</button>
-    <button data-t="npc" onclick="wtab('npc')">NPC (${np.length})</button>
+    <button data-t="npc" onclick="wtab('npc')">人物 (${np.length})</button>
     <button data-t="plot" onclick="wtab('plot')">剧情线 (${pl.length})</button>
-    <button data-t="clue" onclick="wtab('clue')">线索 (${cl.length})</button>
-    <button data-t="loc" onclick="wtab('loc')">地点 (${(_wtemp.locations||[]).length})</button>
-    <button data-t="faction" onclick="wtab('faction')">势力 (${(_wtemp.factions||[]).length})</button>
+    <button data-t="clue" onclick="wtab('clue')">伏笔 (${cl.length})</button>
+    <button data-t="loc" onclick="wtab('loc')">地点 (${locs.length})</button>
+    <button data-t="faction" onclick="wtab('faction')">势力 (${facs.length})</button>
     <button data-t="egg" onclick="wtab('egg')">彩蛋 (${eg.length})</button>
     <button data-t="entry" onclick="wtab('entry')">世界书 (${entries.length})</button>
   </div>
-  <div id="tc-basic" class="tc act">
-    <div class="fg"><label>名称</label><input id="wn" value="${esc(_wtemp._name||'')}" placeholder="标识名"></div>
-    <div class="fg"><label>展示标题</label><input id="wt" value="${esc(ov.title||_wtemp.title||_wtemp._name||'')}"></div>
-    <div class="fg"><label>类型</label><input id="wty" value="${esc(ov.type||_wtemp.type||'')}"></div>
-    <div class="fg"><label>基础描述</label><textarea id="wd" rows="4">${esc(ov.description||_wtemp.description||_wtemp.content||'')}</textarea></div>
-    <div class="fg"><label>标签（逗号分隔）</label><input id="wtag" value="${esc((ov.tags||_wtemp.tags||[]).join(', '))}"></div>
+  <div id="wtc-basic" class="tc act">
+    <div class="fr"><div class="fg"><label>名称（唯一标识${_wsource?'，编辑时不可修改':''}）</label><input id="wn" value="${esc(_wtemp._name||'')}"${_wsource?' disabled':''} placeholder="标识名"></div>
+    <div class="fg"><label>展示标题</label><input id="wt" value="${esc(ov.title||'')}"></div></div>
+    <div class="fr"><div class="fg"><label>类型</label><input id="wty" value="${esc(ov.type||'')}" placeholder="如：东方玄幻 / 星际歌剧"></div>
+    <div class="fg"><label>标签（逗号分隔）</label><input id="wtag" value="${esc((ov.tags||[]).join(', '))}"></div></div>
+    <div class="fg"><label>基础描述</label><textarea id="wd" rows="5">${esc(ov.description||'')}</textarea>
+      <button class="btn btn-sm btn-ai" style="margin-top:6px" onclick="aiExpand('wd')">🤖 AI 润色描述</button></div>
     <div class="cs" style="margin-top:14px"><h3>⚖️ 战力设置</h3></div>
-    <div class="fr">
-      <div class="fg"><label>战力档位</label><select id="wptier">
-        <option value=""${(ov.power_tier||_wtemp.power_tier||'')==''?' selected':''}>(未设置)</option>
-        <option value="凡人"${(ov.power_tier||_wtemp.power_tier)=='凡人'?' selected':''}>凡人档（10~50）</option>
-        <option value="超凡"${(ov.power_tier||_wtemp.power_tier)=='超凡'?' selected':''}>超凡档（50~500）</option>
-        <option value="神话"${(ov.power_tier||_wtemp.power_tier)=='神话'?' selected':''}>神话档（500~9999）</option>
-      </select></div>
-      <div class="fg" style="flex:2"></div>
-    </div>
+    <div class="fg"><label>战力档位</label><select id="wptier">${tierOpts}</select></div>
     <div class="fg"><label>实力等级参考（战力金字塔）</label><textarea id="wpref" rows="5" placeholder="例：
 普通商贩、工匠：战力 10~50
 云骑军士卒：战力 80~150
 军校尉：战力 200~400
 将军级：战力 1500~3000+
-未标注的NPC默认不超过第2档。">${esc(ov.power_reference||_wtemp.power_reference||'')}</textarea></div>
+未标注的NPC默认不超过第2档。">${esc(ov.power_reference||'')}</textarea></div>
   </div>
-  <div id="tc-entry" class="tc">${entryHtml||'<div style="color:var(--dim);padding:10px">暂无世界书条目</div>'}
+  <div id="wtc-npc" class="tc">${wNpcForm()}${npcHtml||'<div style="color:var(--dim);padding:10px">暂无人物</div>'}</div>
+  <div id="wtc-plot" class="tc">${wPlotForm()}${plotHtml||'<div style="color:var(--dim);padding:10px">暂无剧情线</div>'}</div>
+  <div id="wtc-clue" class="tc">${wClueForm()}${clueHtml||'<div style="color:var(--dim);padding:10px">暂无伏笔</div>'}</div>
+  <div id="wtc-loc" class="tc">${wLocForm()}${locHtml||'<div style="color:var(--dim);padding:10px">暂无地点</div>'}</div>
+  <div id="wtc-faction" class="tc">${wFacForm()}${facHtml||'<div style="color:var(--dim);padding:10px">暂无势力</div>'}</div>
+  <div id="wtc-egg" class="tc">${wEggForm()}${eggHtml||'<div style="color:var(--dim);padding:10px">暂无彩蛋</div>'}</div>
+  <div id="wtc-entry" class="tc">${entryHtml||'<div style="color:var(--dim);padding:10px">暂无世界书条目</div>'}
     <div class="cs" style="margin-top:14px"><h3>新建 / 编辑条目</h3></div>
     <input id="went-id" type="hidden"><div class="fr"><div class="fg"><label>名称</label><input id="went-name"></div><div class="fg"><label>ID（新建可空）</label><input id="went-id-show" disabled></div></div>
     <div class="fr"><div class="fg"><label>关键词（逗号或换行）</label><textarea id="went-keys"></textarea></div><div class="fg"><label>次级关键词</label><textarea id="went-secondary"></textarea></div></div>
@@ -358,77 +395,103 @@ function wr(){
     <div class="fr"><div class="fg"><label>优先级</label><input id="went-priority" type="number" value="10"></div><div class="fg"><label>插入顺序</label><input id="went-order" type="number" value="100"></div><div class="fg"><label>插入位置</label><select id="went-position"><option>system</option><option>before_char</option><option>after_char</option><option>before_history</option><option>after_history</option></select></div></div>
     <div class="fr"><label class="ckline"><input id="went-constant" type="checkbox"> 常驻</label><label class="ckline"><input id="went-enabled" type="checkbox" checked> 启用</label></div>
     <button class="btn btn-sm" onclick="wentryCancel()">取消编辑</button> <button class="btn btn-sm btn-p" onclick="wentrySave()">保存到当前世界</button>
-  </div>
-  <div id="tc-npc" class="tc">${npcHtml}
-    <div class="fr" style="margin-top:8px"><div class="fg"><input id="wnpc-n" placeholder="NPC名字"></div>
-    <div class="fg"><input id="wnpc-t" placeholder="头衔"></div>
-    <div class="fg" style="flex:0.6"><select id="wnpc-a"><option value="友方">友方</option><option value="中立">中立</option><option value="敌方">敌方</option></select></div></div>
-    <div class="fr"><div class="fg" style="flex:1.2"><select id="wnpc-pw" onchange="document.getElementById('wnpc-pv').style.display=this.value==='custom'?'block':'none'"><option value="">战力标签（可选）</option><option value="略强于玩家">略强于玩家</option><option value="势均力敌">势均力敌</option><option value="碾压级">碾压级</option><option value="弱于玩家">弱于玩家</option><option value="custom">自定义数值...</option></select></div>
-    <div class="fg" style="flex:0.8"><input id="wnpc-pv" type="number" placeholder="战力值（如2800）" style="display:none"></div></div>
-    <div class="fr"><div class="fg"><textarea id="wnpc-d" rows="2" placeholder="描述"></textarea></div></div>
-    <div class="fr"><div class="fg"><input id="wnpc-tr" placeholder="性格特质（逗号分隔，如：智将,慵懒,护短）"></div></div>
-    <div class="fr"><div class="fg"><input id="wnpc-ds" placeholder="对话样本（用｜分隔多条）"></div></div>
-    <div class="fr" style="align-items:center"><label class="ckline"><input type="checkbox" id="wnpc-k"> ★ 标记为关键NPC</label></div>
-    <button class="btn btn-sm" onclick="wnpcAdd()">＋ 添加NPC</button>
-  </div>
-  <div id="tc-plot" class="tc">${plotHtml}
-    <div class="fr" style="margin-top:8px"><div class="fg"><input id="wplt" placeholder="剧情线标题"></div>
-    <div class="fg" style="flex:0.5"><select id="wplty"><option value="主线">主线</option><option value="支线">支线</option><option value="隐藏">隐藏</option></select></div></div>
-    <div class="fg"><textarea id="wpld" rows="2" placeholder="剧情概要"></textarea></div>
-    <div class="fg"><textarea id="wplst" rows="3" placeholder="阶段（每行一个，格式：阶段名｜阶段描述｜关联线索）">${esc(_wtemp._staging||'')}</textarea></div>
-    <button class="btn btn-sm" onclick="wplotAdd()">＋ 添加剧情线</button>
-  </div>
-  <div id="tc-clue" class="tc">${clueHtml}
-    <div class="fr" style="margin-top:8px"><div class="fg"><input id="wcln" placeholder="线索名称"></div>
-    <div class="fg" style="flex:0.5"><select id="wclty"><option value="物证">物证</option><option value="证言">证言</option><option value="环境">环境</option><option value="传闻">传闻</option></select></div></div>
-    <div class="fr"><div class="fg"><input id="wcl-npc" placeholder="关联NPC（逗号分隔）"></div>
-    <div class="fg"><input id="wcl-plot" placeholder="解锁剧情线（逗号分隔）"></div></div>
-    <div class="fg"><textarea id="wcld" rows="2" placeholder="线索内容"></textarea></div>
-    <button class="btn btn-sm" onclick="wclueAdd()">＋ 添加线索</button>
-  </div>
-  <div id="tc-egg" class="tc">${eggHtml}
-    <div class="fr" style="margin-top:8px"><div class="fg"><input id="weg-t" placeholder="彩蛋文本"></div>
-    <div class="fg"><input id="weg-c" placeholder="触发条件"></div></div>
-    <button class="btn btn-sm" onclick="weggAdd()">＋ 添加彩蛋</button>
-  </div>
-  <div id="tc-loc" class="tc">${(_wtemp.locations||[]).map((l,i)=>'<div class="npc-item"><div class="kv"><strong>'+esc(l.name)+'</strong> <span class="badge">'+esc(l.type||'地点')+'</span>'+(l.is_important?' <span class="badge">★重要</span>':'')+'<br><span style="color:var(--dim)">'+esc(clampText(l.description||'',60))+'</span>'+(l.related_npcs&&l.related_npcs.length?'<br><span style="color:var(--accent2);font-size:11px">👥 '+esc(l.related_npcs.join(' · '))+'</span>':'')+'</div><button class="btn btn-sm btn-d" onclick="wlocDel('+i+')">×</button></div>').join('')||'<div style="color:var(--dim);font-size:13px;padding:10px">暂无地点</div>'}
-    <div class="fr" style="margin-top:8px"><div class="fg"><input id="wloc-n" placeholder="地点名称"></div>
-    <div class="fg" style="flex:0.5"><select id="wloc-ty"><option value="城邦">城邦</option><option value="地标">地标</option><option value="秘境">秘境</option><option value="区域">区域</option></select></div></div>
-    <div class="fr"><div class="fg"><input id="wloc-rn" placeholder="关联NPC（逗号分隔）"></div></div>
-    <div class="fg"><textarea id="wloc-d" rows="2" placeholder="描述"></textarea></div>
-    <div class="fr" style="align-items:center"><label class="ckline"><input type="checkbox" id="wloc-imp"> ★ 标记为重要地点</label></div>
-    <button class="btn btn-sm" onclick="wlocAdd()">＋ 添加地点</button>
-  </div>
-  <div id="tc-faction" class="tc">${(_wtemp.factions||[]).map((f,i)=>'<div class="npc-item"><div class="kv"><strong>'+esc(f.name)+'</strong> <span class="badge">'+esc(f.alignment||'中立')+'</span><br><span style="color:var(--dim)">'+esc(clampText(f.description||'',60))+'</span>'+(f.members&&f.members.length?'<br><span style="color:var(--accent2);font-size:11px">👤 '+esc(f.members.join(' · '))+'</span>':'')+'</div><button class="btn btn-sm btn-d" onclick="wfactionDel('+i+')">×</button></div>').join('')||'<div style="color:var(--dim);font-size:13px;padding:10px">暂无势力</div>'}
-    <div class="fr" style="margin-top:8px"><div class="fg"><input id="wf-n" placeholder="势力名称"></div>
-    <div class="fg" style="flex:0.5"><select id="wf-al"><option value="守序">守序</option><option value="中立">中立</option><option value="混乱">混乱</option></select></div></div>
-    <div class="fr"><div class="fg"><input id="wf-mem" placeholder="成员（逗号分隔）"></div></div>
-    <div class="fg"><textarea id="wf-d" rows="2" placeholder="描述"></textarea></div>
-    <div class="fg"><textarea id="wf-rel" rows="2" placeholder="关系（与其他势力的关系描述）"></textarea></div>
-    <button class="btn btn-sm" onclick="wfactionAdd()">＋ 添加势力</button>
   </div>`}
 
+/* ── 世界观编辑器：各板块表单 ── */
+function wNpcForm(){const e=_wNpcEdit>=0?(_wtemp.npc||[])[_wNpcEdit]:null;
+  const pw=e?(e.power?String(e.power):''):'';const pt=e&&!e.power?(e.power_tag||''):'';
+  return '<div class="cs"><h3>'+(e?'编辑人物「'+esc(e.name)+'」':'新增人物')+'</h3>'+
+  '<div class="fr"><div class="fg"><input id="wnpc-n" placeholder="人物名字" value="'+esc(e?e.name:'')+'"></div>'+
+  '<div class="fg"><input id="wnpc-t" placeholder="头衔" value="'+esc(e?e.title||'':'')+'"></div>'+
+  '<div class="fg" style="flex:0.6"><select id="wnpc-a"><option value="友方"'+(e&&e.alignment==='友方'?' selected':'')+'>友方</option><option value="中立"'+(!e||e.alignment==='中立'?' selected':'')+'>中立</option><option value="敌方"'+(e&&e.alignment==='敌方'?' selected':'')+'>敌方</option></select></div></div>'+
+  '<div class="fg"><textarea id="wnpc-d" rows="2" placeholder="描述（身份、外貌、动机）">'+esc(e?e.description||'':'')+'</textarea></div>'+
+  '<div class="fr"><div class="fg"><input id="wnpc-tr" placeholder="性格特质（逗号分隔，如：智将,慵懒,护短）" value="'+esc((e&&e.traits||[]).join(','))+'"></div>'+
+  '<div class="fg"><input id="wnpc-ds" placeholder="台词样本（用｜分隔多条）" value="'+esc((e&&e.dialog_samples||[]).join('｜'))+'"></div></div>'+
+  '<div class="fr"><div class="fg" style="flex:1.2"><select id="wnpc-pw" onchange="document.getElementById(\'wnpc-pv\').style.display=this.value===\'custom\'?\'block\':\'none\'">'+
+    '<option value="">战力标签（可选）</option>'+['略强于玩家','势均力敌','碾压级','弱于玩家'].map(o=>'<option value="'+o+'"'+(pt===o?' selected':'')+'>'+o+'</option>').join('')+
+    '<option value="custom"'+(e&&e.power?' selected':'')+'>自定义数值...</option></select></div>'+
+  '<div class="fg" style="flex:0.8"><input id="wnpc-pv" type="number" placeholder="战力值（如2800）" value="'+esc(pw)+'" style="display:'+(e&&e.power?'block':'none')+'"></div></div>'+
+  '<label class="ckline"><input type="checkbox" id="wnpc-k"'+(e&&e.is_key?' checked':'')+'> ★ 标记为关键NPC</label>'+
+  '<button class="btn btn-sm btn-p" onclick="wnpcSave()">'+(e?'保存修改':'＋ 添加人物')+'</button> '+(e?'<button class="btn btn-sm" onclick="wnpcCancel()">取消</button>':'')+'</div>'}
+function wPlotForm(){const e=_wPlotEdit>=0?(_wtemp.plotlines||[])[_wPlotEdit]:null;
+  const stages=(e&&e.stages||[]).map((s,i)=>'<div class="stages" id="wstage-'+i+'">'+
+    '<div class="fr"><div class="fg"><input class="ws-t" placeholder="阶段名" value="'+esc(s.title||'')+'"></div>'+
+    '<div class="fg"><input class="ws-trigger" placeholder="触发条件（进入下一阶段）" value="'+esc(s.trigger||'')+'"></div></div>'+
+    '<div class="fg"><textarea class="ws-d" rows="2" placeholder="阶段描述">'+esc(s.description||'')+'</textarea></div>'+
+    '<div class="fg"><input class="ws-clues" placeholder="关联线索（逗号分隔）" value="'+esc((s.clues||[]).join(','))+'"></div>'+
+    '<button class="btn btn-sm btn-d" onclick="wstageDel('+i+')">删除此阶段</button></div>').join('');
+  return '<div class="cs"><h3>'+(e?'编辑剧情线「'+esc(e.title)+'」':'新增剧情线')+'</h3>'+
+  '<div class="fr"><div class="fg"><input id="wplt" placeholder="剧情线标题" value="'+esc(e?e.title:'')+'"></div>'+
+  '<div class="fg" style="flex:0.5"><select id="wplty"><option value="主线"'+(e&&e.type==='主线'?' selected':'')+'>主线</option><option value="支线"'+(!e||e.type==='支线'?' selected':'')+'>支线</option><option value="隐藏"'+(e&&e.type==='隐藏'?' selected':'')+'>隐藏</option></select></div></div>'+
+  '<div class="fg"><textarea id="wpld" rows="2" placeholder="剧情概要">'+esc(e?e.summary||'':'')+'</textarea></div>'+
+  '<div class="fg"><input id="wplnpc" placeholder="关联人物（逗号分隔）" value="'+esc((e&&e.related_npc||[]).join(','))+'"></div>'+
+  '<div class="cs"><h3>阶段（按推进顺序）</h3><div id="wstages">'+stages+'</div>'+
+  '<button class="btn btn-sm" onclick="wstageAdd()">＋ 添加阶段</button></div>'+
+  '<button class="btn btn-sm btn-p" onclick="wplotSave()">'+(e?'保存修改':'＋ 添加剧情线')+'</button> '+(e?'<button class="btn btn-sm" onclick="wplotCancel()">取消</button>':'')+'</div>'}
+function wClueForm(){const e=_wClueEdit>=0?(_wtemp.clues||[])[_wClueEdit]:null;
+  return '<div class="cs"><h3>'+(e?'编辑伏笔「'+esc(e.name)+'」':'新增伏笔')+'</h3>'+
+  '<div class="fr"><div class="fg"><input id="wcln" placeholder="伏笔名称" value="'+esc(e?e.name:'')+'"></div>'+
+  '<div class="fg" style="flex:0.6"><select id="wclty"><option value="物证"'+(e&&e.type==='物证'?' selected':'')+'>物证</option><option value="证言"'+(e&&e.type==='证言'?' selected':'')+'>证言</option><option value="环境"'+(!e||e.type==='环境'?' selected':'')+'>环境</option><option value="传闻"'+(e&&e.type==='传闻'?' selected':'')+'>传闻</option></select></div></div>'+
+  '<div class="fg"><textarea id="wcld" rows="2" placeholder="伏笔内容（埋下的真相）">'+esc(e?e.content||'':'')+'</textarea></div>'+
+  '<div class="fr"><div class="fg"><input id="wcl-npc" placeholder="关联NPC（逗号分隔）" value="'+esc((e&&e.related_npc||[]).join(','))+'"></div>'+
+  '<div class="fg"><input id="wcl-plot" placeholder="解锁剧情线（逗号分隔）" value="'+esc((e&&e.unlocks||[]).join(','))+'"></div></div>'+
+  '<label class="ckline"><input type="checkbox" id="wcl-rev"'+(e&&e.revealed?' checked':'')+'> 已揭晓（揭晓后 GM 可在叙事中明示）</label>'+
+  '<button class="btn btn-sm btn-p" onclick="wclueSave()">'+(e?'保存修改':'＋ 添加伏笔')+'</button> '+(e?'<button class="btn btn-sm" onclick="wclueCancel()">取消</button>':'')+'</div>'}
+function wLocForm(){const e=_wLocEdit>=0?(_wtemp.locations||[])[_wLocEdit]:null;
+  return '<div class="cs"><h3>'+(e?'编辑地点「'+esc(e.name)+'」':'新增地点')+'</h3>'+
+  '<div class="fr"><div class="fg"><input id="wloc-n" placeholder="地点名称" value="'+esc(e?e.name:'')+'"></div>'+
+  '<div class="fg" style="flex:0.6"><select id="wloc-ty"><option value="城邦"'+(e&&e.type==='城邦'?' selected':'')+'>城邦</option><option value="地标"'+(!e||e.type==='地标'?' selected':'')+'>地标</option><option value="秘境"'+(e&&e.type==='秘境'?' selected':'')+'>秘境</option><option value="区域"'+(e&&e.type==='区域'?' selected':'')+'>区域</option></select></div></div>'+
+  '<div class="fg"><textarea id="wloc-d" rows="2" placeholder="描述">'+esc(e?e.description||'':'')+'</textarea></div>'+
+  '<div class="fg"><input id="wloc-rn" placeholder="关联NPC（逗号分隔）" value="'+esc((e&&e.related_npcs||[]).join(','))+'"></div>'+
+  '<label class="ckline"><input type="checkbox" id="wloc-imp"'+(e&&e.is_important?' checked':'')+'> ★ 标记为重要地点</label>'+
+  '<button class="btn btn-sm btn-p" onclick="wlocSave()">'+(e?'保存修改':'＋ 添加地点')+'</button> '+(e?'<button class="btn btn-sm" onclick="wlocCancel()">取消</button>':'')+'</div>'}
+function wFacForm(){const e=_wFacEdit>=0?(_wtemp.factions||[])[_wFacEdit]:null;
+  return '<div class="cs"><h3>'+(e?'编辑势力「'+esc(e.name)+'」':'新增势力')+'</h3>'+
+  '<div class="fr"><div class="fg"><input id="wf-n" placeholder="势力名称" value="'+esc(e?e.name:'')+'"></div>'+
+  '<div class="fg" style="flex:0.6"><select id="wf-al"><option value="守序"'+(e&&e.alignment==='守序'?' selected':'')+'>守序</option><option value="中立"'+(!e||e.alignment==='中立'?' selected':'')+'>中立</option><option value="混乱"'+(e&&e.alignment==='混乱'?' selected':'')+'>混乱</option></select></div></div>'+
+  '<div class="fg"><textarea id="wf-d" rows="2" placeholder="描述（宗旨、作风）">'+esc(e?e.description||'':'')+'</textarea></div>'+
+  '<div class="fr"><div class="fg"><input id="wf-mem" placeholder="成员（逗号分隔）" value="'+esc((e&&e.members||[]).join(','))+'"></div></div>'+
+  '<div class="fg"><textarea id="wf-rel" rows="2" placeholder="与其他势力的关系">'+esc(e?e.relations||'':'')+'</textarea></div>'+
+  '<button class="btn btn-sm btn-p" onclick="wfacSave()">'+(e?'保存修改':'＋ 添加势力')+'</button> '+(e?'<button class="btn btn-sm" onclick="wfacCancel()">取消</button>':'')+'</div>'}
+function wEggForm(){const e=_wEggEdit>=0?(_wtemp.eggs||[])[_wEggEdit]:null;
+  return '<div class="cs"><h3>'+(e?'编辑彩蛋':'新增彩蛋')+'</h3>'+
+  '<div class="fg"><input id="weg-t" placeholder="彩蛋文本" value="'+esc(e?e.text:'')+'"></div>'+
+  '<div class="fr"><div class="fg"><input id="weg-c" placeholder="触发条件" value="'+esc(e?e.trigger_condition||'':'')+'"></div>'+
+  '<div class="fg"><input id="weg-r" placeholder="奖励（可选）" value="'+esc(e?e.reward||'':'')+'"></div></div>'+
+  '<button class="btn btn-sm btn-p" onclick="weggSave()">'+(e?'保存修改':'＋ 添加彩蛋')+'</button> '+(e?'<button class="btn btn-sm" onclick="weggCancel()">取消</button>':'')+'</div>'}
+
+/* ── 世界观编辑器打开/保存 ── */
+function _blankWorld(){return {overview:{title:'',type:'',description:'',tags:[]},entries:[],npc:[],plotlines:[],clues:[],locations:[],factions:[],eggs:[]}}
+function _wModalBody(){return '<h3>'+(_wsource?'编辑 - '+esc(_wsource):'新建世界观')+'</h3><div class="hintline">人物、剧情线、伏笔等板块都会在冒险开局时注入 GM 上下文；编辑后记得点「保存」。</div>'+wr()+
+  '<div class="ma"><button class="btn btn-ai" onclick="aiCompleteWorld()">🤖 AI 补全缺失板块</button><button class="btn" onclick="mc()">取消</button><button class="btn btn-p" onclick="sw(\''+jsq(_wsource)+'\')">保存</button></div>'}
 function we(n){
-  _wsource=n||'';
-  _wtemp={overview:{title:'',type:'',description:'',tags:[]},entries:[],npc:[],plotlines:[],clues:[],eggs:[],locations:[],factions:[],_staging:''};
+  _wsource=n||'';_wNpcEdit=_wPlotEdit=_wClueEdit=_wLocEdit=_wFacEdit=_wEggEdit=-1;
+  _wtemp=_blankWorld();
   if(n){
     mo('<div class="loading" style="padding:40px">加载中...</div>');
     ag('world/get',{name:n}).then(function(d){
       _wtemp=(d&&d.world&&typeof d.world==='object')?d.world:(d||{});
-      _wtemp._name=n;_wtemp._staging=_wtemp._staging||'';
-      mo('<h3>编辑 - '+esc(n)+'</h3>'+wr()+'<div class="ma"><button class="btn" onclick="mc()">取消</button><button class="btn btn-p" onclick="sw(\''+jsq(n)+'\')">保存</button></div>');
+      _wtemp._name=n;
+      mo(_wModalBody());
     }).catch(function(e){tt(e.message,'bad')});
     return;
   }
-  mo('<h3>新建世界观</h3>'+wr()+'<div class="ma"><button class="btn" onclick="mc()">取消</button><button class="btn btn-p" onclick="sw(\'\')">保存</button></div>');
+  mo(_wModalBody());
 }
 function _stripStaging(o){const c={};Object.keys(o||{}).forEach(k=>{if(k.charAt(0)!=='_')c[k]=o[k]});return c}
-async function sw(on){const n=gv('wn').trim();if(!n){tt('名称必填','bad');return}
-  const ov=_wtemp.overview||{};ov.title=gv('wt').trim()||n;ov.type=gv('wty').trim();ov.description=gv('wd').trim();ov.tags=gv('wtag').split(',').map(s=>s.trim()).filter(Boolean);
-  ov.power_tier=gv('wptier');
-  ov.power_reference=gv('wpref').trim();
+function _collectWtemp(){
+  const ov=_wtemp.overview||{};
+  if(document.getElementById('wn'))ov.title=gv('wt').trim()||gv('wn').trim();else if(ov.title===undefined)ov.title='';
+  if(document.getElementById('wty'))ov.type=gv('wty').trim();
+  if(document.getElementById('wd'))ov.description=gv('wd').trim();
+  if(document.getElementById('wtag'))ov.tags=csv(gv('wtag'));
+  if(document.getElementById('wptier'))ov.power_tier=gv('wptier');
+  if(document.getElementById('wpref'))ov.power_reference=gv('wpref').trim();
   _wtemp.overview=ov;
-  const payload=_stripStaging(_wtemp);
+  return _stripStaging(_wtemp);
+}
+async function sw(on){const n=gv('wn').trim();if(!n){tt('名称必填','bad');return}
+  const payload=_collectWtemp();
   (async()=>{try{
     /* 桥的 apiPost 不支持 query 参数：name 一并放入 body，后端从 body 读取 */
     await ap('world/save',Object.assign({},payload,{name:n}));
@@ -436,47 +499,88 @@ async function sw(on){const n=gv('wn').trim();if(!n){tt('名称必填','bad');re
     markLocal('worlds_changed');tt('已保存');mc();lw()
   }catch(e){tt(e.message,'bad')}})()}
 
-function _rNPC(){const el=document.querySelector('#tc-npc');if(!el)return;const h=wr();const m=h.match(/<div id="tc-npc" class="tc">([\s\S]*?)<div id="tc-plot"/);el.innerHTML=m?m[1]:'<div style="color:var(--dim);font-size:13px;padding:10px">暂无NPC</div>';}
-function _entryParts(v){return String(v||'').split(/[\n,，、]+/).map(s=>s.trim()).filter(Boolean)}
-function _rerenderWorld(tab='entry'){mo('<h3>'+(_wsource?'编辑 - '+esc(_wsource):'新建世界观')+'</h3>'+wr()+'<div class="ma"><button class="btn" onclick="mc()">取消</button><button class="btn btn-p" onclick="sw(\''+jsq(_wsource)+'\')">保存</button></div>');wtab(tab)}
-function wentryEdit(id){const e=(_wtemp.entries||[]).find(x=>x.id===id);if(!e)return;document.getElementById('went-id').value=e.id||'';document.getElementById('went-id-show').value=e.id||'';document.getElementById('went-name').value=e.name||'';document.getElementById('went-keys').value=(e.keys||[]).join('\n');document.getElementById('went-secondary').value=(e.secondary_keys||[]).join('\n');document.getElementById('went-content').value=e.content||'';document.getElementById('went-constant').checked=!!e.constant;document.getElementById('went-enabled').checked=e.enabled!==false;document.getElementById('went-priority').value=Number.isInteger(e.priority)?e.priority:10;document.getElementById('went-order').value=Number.isInteger(e.insertion_order)?e.insertion_order:100;document.getElementById('went-position').value=e.insertion_position||'system'}
+function _rerenderWorld(tab){mo(_wModalBody());wtab(tab)}
+function _entryParts(v){return csv(v)}
+
+/* ── 世界书条目 ── */
+function wentryEdit(id){const e=(_wtemp.entries||[]).find(x=>x.id===id);if(!e)return;document.getElementById('went-id').value=e.id||'';document.getElementById('went-id-show').value=e.id||'';document.getElementById('went-name').value=e.name||'';document.getElementById('went-keys').value=(e.keys||[]).join('\n');document.getElementById('went-secondary').value=(e.secondary_keys||[]).join('\n');document.getElementById('went-content').value=e.content||'';document.getElementById('went-constant').checked=!!e.constant;document.getElementById('went-enabled').checked=e.enabled!==false;document.getElementById('went-priority').value=Number.isInteger(e.priority)?e.priority:10;document.getElementById('went-order').value=Number.isInteger(e.insertion_order)?e.insertion_order:100;document.getElementById('went-position').value=e.insertion_position||'system';wtab('entry')}
 function wentryCancel(){['went-id','went-id-show','went-name','went-keys','went-secondary','went-content'].forEach(id=>document.getElementById(id).value='');document.getElementById('went-constant').checked=false;document.getElementById('went-enabled').checked=true;document.getElementById('went-priority').value=10;document.getElementById('went-order').value=100;document.getElementById('went-position').value='system'}
-function wentrySave(){const name=document.getElementById('went-name').value.trim();if(!name){tt('条目名称必填','bad');return}const id=document.getElementById('went-id').value||uid().replace(/-/g,'');const item={id,name,keys:_entryParts(document.getElementById('went-keys').value),secondary_keys:_entryParts(document.getElementById('went-secondary').value),content:document.getElementById('went-content').value,constant:document.getElementById('went-constant').checked,enabled:document.getElementById('went-enabled').checked,priority:parseInt(document.getElementById('went-priority').value,10)||0,insertion_order:parseInt(document.getElementById('went-order').value,10)||0,insertion_position:document.getElementById('went-position').value};_wtemp.entries=_wtemp.entries||[];const i=_wtemp.entries.findIndex(e=>e.id===id);if(i>=0)_wtemp.entries[i]=item;else _wtemp.entries.push(item);_rerenderWorld();tt('条目已更新，保存世界后写入')}
-function wentryDel(id){if(!_wtemp.entries)return;_wtemp.entries=_wtemp.entries.filter(e=>e.id!==id);_rerenderWorld();tt('条目已删除，保存世界后生效')}
-function wnpcAdd(){const n=document.getElementById('wnpc-n').value.trim();if(!n){tt('输入NPC名字','bad');return}
-  _wtemp.npc=_wtemp.npc||[];const pt=document.getElementById('wnpc-pw').value;const pv=pt==='custom'?(+document.getElementById('wnpc-pv').value||0):0;
-  const tr=document.getElementById('wnpc-tr').value.trim();
-  const ds=document.getElementById('wnpc-ds').value.trim();
-  _wtemp.npc.push({name:n,title:document.getElementById('wnpc-t').value.trim(),alignment:document.getElementById('wnpc-a').value,description:document.getElementById('wnpc-d').value.trim(),traits:tr?tr.split(',').map(s=>s.trim()).filter(Boolean):[],dialog_samples:ds?ds.split('｜').map(s=>s.trim()).filter(Boolean):[],power_tag:pt==='custom'?'':pt,power:pv,is_key:document.getElementById('wnpc-k').checked});
-  document.getElementById('wnpc-n').value='';document.getElementById('wnpc-t').value='';document.getElementById('wnpc-d').value='';document.getElementById('wnpc-pv').value='';document.getElementById('wnpc-k').checked=false;document.getElementById('wnpc-pw').value='';document.getElementById('wnpc-pv').style.display='none';document.getElementById('wnpc-tr').value='';document.getElementById('wnpc-ds').value='';_rNPC();tt('已添加NPC')}
-function wnpcDel(i){_wtemp.npc=_wtemp.npc||[];_wtemp.npc.splice(i,1);_rNPC();tt('已删除')}
-function wplotAdd(){const t=document.getElementById('wplt').value.trim();if(!t){tt('输入剧情线标题','bad');return}
-  const stText=document.getElementById('wplst').value.trim();
-  const stages=stText?stText.split('\n').filter(Boolean).map(s=>{
-    const parts=s.split('｜');
-    return {title:parts[0].trim(),description:(parts[1]||'').trim(),trigger:'',clues:(parts[2]||'').split(',').map(x=>x.trim()).filter(Boolean),choices:[]};
-  }):[];
-  _wtemp.plotlines=_wtemp.plotlines||[];_wtemp.plotlines.push({title:t,type:document.getElementById('wplty').value,summary:document.getElementById('wpld').value.trim(),stages});
-  document.getElementById('wplt').value='';document.getElementById('wpld').value='';document.getElementById('wplst').value='';tt('已添加剧情线')}
-function wplotDel(i){_wtemp.plotlines=_wtemp.plotlines||[];_wtemp.plotlines.splice(i,1);_rerenderWorld('plot');tt('已删除')}
-function wclueAdd(){const n=document.getElementById('wcln').value.trim();if(!n){tt('输入线索名称','bad');return}
-  _wtemp.clues=_wtemp.clues||[];_wtemp.clues.push({name:n,type:document.getElementById('wclty').value,content:document.getElementById('wcld').value.trim(),related_npc:gv('wcl-npc').trim().split(',').map(s=>s.trim()).filter(Boolean),unlocks:gv('wcl-plot').trim().split(',').map(s=>s.trim()).filter(Boolean)});
-  document.getElementById('wcln').value='';document.getElementById('wcld').value='';_rerenderWorld('clue');tt('已添加线索')}
-function wclueDel(i){_wtemp.clues=_wtemp.clues||[];_wtemp.clues.splice(i,1);_rerenderWorld('clue');tt('已删除')}
-function weggAdd(){const t=document.getElementById('weg-t').value.trim();if(!t){tt('输入彩蛋文本','bad');return}
-  _wtemp.eggs=_wtemp.eggs||[];_wtemp.eggs.push({text:t,trigger_condition:document.getElementById('weg-c').value.trim()||'',reward:''});
-  document.getElementById('weg-t').value='';document.getElementById('weg-c').value='';_rerenderWorld('egg');tt('已添加彩蛋')}
-function weggDel(i){_wtemp.eggs=_wtemp.eggs||[];_wtemp.eggs.splice(i,1);_rerenderWorld('egg');tt('已删除')}
-function wlocAdd(){const n=document.getElementById('wloc-n').value.trim();if(!n){tt('输入地点名称','bad');return}
-  const rn=document.getElementById('wloc-rn').value.trim();
-  _wtemp.locations=_wtemp.locations||[];_wtemp.locations.push({name:n,type:document.getElementById('wloc-ty').value,description:document.getElementById('wloc-d').value.trim(),related_npcs:rn?rn.split(',').map(s=>s.trim()).filter(Boolean):[],is_important:document.getElementById('wloc-imp').checked});
-  document.getElementById('wloc-n').value='';document.getElementById('wloc-d').value='';document.getElementById('wloc-rn').value='';document.getElementById('wloc-imp').checked=false;_rerenderWorld('loc');tt('已添加地点')}
-function wlocDel(i){_wtemp.locations=_wtemp.locations||[];_wtemp.locations.splice(i,1);_rerenderWorld('loc');tt('已删除')}
-function wfactionAdd(){const n=document.getElementById('wf-n').value.trim();if(!n){tt('输入势力名称','bad');return}
-  const mem=document.getElementById('wf-mem').value.trim();
-  _wtemp.factions=_wtemp.factions||[];_wtemp.factions.push({name:n,alignment:document.getElementById('wf-al').value,description:document.getElementById('wf-d').value.trim(),members:mem?mem.split(',').map(s=>s.trim()).filter(Boolean):[],relations:document.getElementById('wf-rel').value.trim()});
-  document.getElementById('wf-n').value='';document.getElementById('wf-d').value='';document.getElementById('wf-mem').value='';document.getElementById('wf-rel').value='';_rerenderWorld('faction');tt('已添加势力')}
-function wfactionDel(i){_wtemp.factions=_wtemp.factions||[];_wtemp.factions.splice(i,1);_rerenderWorld('faction');tt('已删除')}
+function wentrySave(){const name=document.getElementById('went-name').value.trim();if(!name){tt('条目名称必填','bad');return}const id=document.getElementById('went-id').value||uid();const item={id,name,keys:_entryParts(document.getElementById('went-keys').value),secondary_keys:_entryParts(document.getElementById('went-secondary').value),content:document.getElementById('went-content').value,constant:document.getElementById('went-constant').checked,enabled:document.getElementById('went-enabled').checked,priority:parseInt(document.getElementById('went-priority').value,10)||0,insertion_order:parseInt(document.getElementById('went-order').value,10)||0,insertion_position:document.getElementById('went-position').value};_wtemp.entries=_wtemp.entries||[];const i=_wtemp.entries.findIndex(e=>e.id===id);if(i>=0)_wtemp.entries[i]=item;else _wtemp.entries.push(item);_rerenderWorld('entry');tt('条目已更新，保存世界后写入')}
+function wentryDel(id){if(!_wtemp.entries)return;_wtemp.entries=_wtemp.entries.filter(e=>e.id!==id);_rerenderWorld('entry');tt('条目已删除，保存世界后生效')}
+
+/* ── 人物 CRUD ── */
+function _collectNpcForm(){const n=gv('wnpc-n').trim();if(!n){tt('输入人物名字','bad');return null}
+  const pt=gv('wnpc-pw');const pv=pt==='custom'?(+gv('wnpc-pv')||0):0;
+  return {name:n,title:gv('wnpc-t').trim(),alignment:gv('wnpc-a'),description:gv('wnpc-d').trim(),traits:csv(gv('wnpc-tr')),dialog_samples:gv('wnpc-ds').trim()?gv('wnpc-ds').split('｜').map(s=>s.trim()).filter(Boolean):[],power_tag:pt==='custom'?'':pt,power:pv,is_key:document.getElementById('wnpc-k').checked}}
+function wnpcSave(){const item=_collectNpcForm();if(!item)return;_wtemp.npc=_wtemp.npc||[];
+  if(_wNpcEdit>=0)_wtemp.npc[_wNpcEdit]=item;else _wtemp.npc.push(item);
+  _wNpcEdit=-1;_rerenderWorld('npc');tt('人物已更新，保存世界后写入')}
+function wnpcEdit(i){_wNpcEdit=i;_rerenderWorld('npc')}
+function wnpcCancel(){_wNpcEdit=-1;_rerenderWorld('npc')}
+function wnpcDel(i){_wtemp.npc=_wtemp.npc||[];_wtemp.npc.splice(i,1);_wNpcEdit=-1;_rerenderWorld('npc');tt('已删除')}
+
+/* ── 剧情线 CRUD（含阶段动态行） ── */
+function wstageAdd(){const box=document.getElementById('wstages');if(!box)return;const i=box.querySelectorAll('.stages').length;
+  const div=document.createElement('div');div.className='stages';div.id='wstage-'+i;
+  div.innerHTML='<div class="fr"><div class="fg"><input class="ws-t" placeholder="阶段名"></div><div class="fg"><input class="ws-trigger" placeholder="触发条件（进入下一阶段）"></div></div>'+
+    '<div class="fg"><textarea class="ws-d" rows="2" placeholder="阶段描述"></textarea></div>'+
+    '<div class="fg"><input class="ws-clues" placeholder="关联线索（逗号分隔）"></div>'+
+    '<button class="btn btn-sm btn-d" onclick="wstageDel('+i+')">删除此阶段</button>';
+  box.appendChild(div)}
+function wstageDel(i){const el=document.getElementById('wstage-'+i);if(el)el.remove()}
+function _collectStages(){const stages=[];document.querySelectorAll('#wstages .stages').forEach(el=>{
+  const title=(el.querySelector('.ws-t')||{}).value||'';const desc=(el.querySelector('.ws-d')||{}).value||'';
+  if(!title.trim()&&!desc.trim())return;
+  stages.push({title:title.trim(),description:desc.trim(),trigger:((el.querySelector('.ws-trigger')||{}).value||'').trim(),clues:csv((el.querySelector('.ws-clues')||{}).value),choices:[]})});
+  return stages}
+function _collectPlotForm(){const t=gv('wplt').trim();if(!t){tt('输入剧情线标题','bad');return null}
+  return {title:t,type:gv('wplty'),summary:gv('wpld').trim(),related_npc:csv(gv('wplnpc')),stages:_collectStages()}}
+function wplotSave(){const item=_collectPlotForm();if(!item)return;_wtemp.plotlines=_wtemp.plotlines||[];
+  if(_wPlotEdit>=0)_wtemp.plotlines[_wPlotEdit]=item;else _wtemp.plotlines.push(item);
+  _wPlotEdit=-1;_rerenderWorld('plot');tt('剧情线已更新，保存世界后写入')}
+function wplotEdit(i){_wPlotEdit=i;_rerenderWorld('plot')}
+function wplotCancel(){_wPlotEdit=-1;_rerenderWorld('plot')}
+function wplotDel(i){_wtemp.plotlines=_wtemp.plotlines||[];_wtemp.plotlines.splice(i,1);_wPlotEdit=-1;_rerenderWorld('plot');tt('已删除')}
+
+/* ── 伏笔 CRUD ── */
+function _collectClueForm(){const n=gv('wcln').trim();if(!n){tt('输入伏笔名称','bad');return null}
+  return {name:n,type:gv('wclty'),content:gv('wcld').trim(),related_npc:csv(gv('wcl-npc')),unlocks:csv(gv('wcl-plot')),revealed:document.getElementById('wcl-rev').checked}}
+function wclueSave(){const item=_collectClueForm();if(!item)return;_wtemp.clues=_wtemp.clues||[];
+  if(_wClueEdit>=0)_wtemp.clues[_wClueEdit]=item;else _wtemp.clues.push(item);
+  _wClueEdit=-1;_rerenderWorld('clue');tt('伏笔已更新，保存世界后写入')}
+function wclueEdit(i){_wClueEdit=i;_rerenderWorld('clue')}
+function wclueCancel(){_wClueEdit=-1;_rerenderWorld('clue')}
+function wclueDel(i){_wtemp.clues=_wtemp.clues||[];_wtemp.clues.splice(i,1);_wClueEdit=-1;_rerenderWorld('clue');tt('已删除')}
+
+/* ── 地点 CRUD ── */
+function _collectLocForm(){const n=gv('wloc-n').trim();if(!n){tt('输入地点名称','bad');return null}
+  return {name:n,type:gv('wloc-ty'),description:gv('wloc-d').trim(),related_npcs:csv(gv('wloc-rn')),is_important:document.getElementById('wloc-imp').checked}}
+function wlocSave(){const item=_collectLocForm();if(!item)return;_wtemp.locations=_wtemp.locations||[];
+  if(_wLocEdit>=0)_wtemp.locations[_wLocEdit]=item;else _wtemp.locations.push(item);
+  _wLocEdit=-1;_rerenderWorld('loc');tt('地点已更新，保存世界后写入')}
+function wlocEdit(i){_wLocEdit=i;_rerenderWorld('loc')}
+function wlocCancel(){_wLocEdit=-1;_rerenderWorld('loc')}
+function wlocDel(i){_wtemp.locations=_wtemp.locations||[];_wtemp.locations.splice(i,1);_wLocEdit=-1;_rerenderWorld('loc');tt('已删除')}
+
+/* ── 势力 CRUD ── */
+function _collectFacForm(){const n=gv('wf-n').trim();if(!n){tt('输入势力名称','bad');return null}
+  return {name:n,alignment:gv('wf-al'),description:gv('wf-d').trim(),members:csv(gv('wf-mem')),relations:gv('wf-rel').trim()}}
+function wfacSave(){const item=_collectFacForm();if(!item)return;_wtemp.factions=_wtemp.factions||[];
+  if(_wFacEdit>=0)_wtemp.factions[_wFacEdit]=item;else _wtemp.factions.push(item);
+  _wFacEdit=-1;_rerenderWorld('faction');tt('势力已更新，保存世界后写入')}
+function wfacEdit(i){_wFacEdit=i;_rerenderWorld('faction')}
+function wfacCancel(){_wFacEdit=-1;_rerenderWorld('faction')}
+function wfacDel(i){_wtemp.factions=_wtemp.factions||[];_wtemp.factions.splice(i,1);_wFacEdit=-1;_rerenderWorld('faction');tt('已删除')}
+
+/* ── 彩蛋 CRUD ── */
+function _collectEggForm(){const t=gv('weg-t').trim();if(!t){tt('输入彩蛋文本','bad');return null}
+  return {text:t,trigger_condition:gv('weg-c').trim(),reward:gv('weg-r').trim()}}
+function weggSave(){const item=_collectEggForm();if(!item)return;_wtemp.eggs=_wtemp.eggs||[];
+  if(_wEggEdit>=0)_wtemp.eggs[_wEggEdit]=item;else _wtemp.eggs.push(item);
+  _wEggEdit=-1;_rerenderWorld('egg');tt('彩蛋已更新，保存世界后写入')}
+function weggEdit(i){_wEggEdit=i;_rerenderWorld('egg')}
+function weggCancel(){_wEggEdit=-1;_rerenderWorld('egg')}
+function weggDel(i){_wtemp.eggs=_wtemp.eggs||[];_wtemp.eggs.splice(i,1);_wEggEdit=-1;_rerenderWorld('egg');tt('已删除')}
 
 async function dw(n){if(!(await uiConfirm('删除「'+n+'」？该操作不可恢复。','删除世界观')))return;try{await ap('world/delete',{name:n});markLocal('worlds_changed');tt('已删除');lw()}catch(e){tt(e.message,'bad')}}
 function downloadJson(data,name){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:'application/json'}));a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)}
@@ -488,10 +592,65 @@ async function exportDownload(endpoint,params,filename){
 async function exportWorld(n){try{await exportDownload('export/world',{name:n},n+'.json');tt('已导出 '+n+'.json')}catch(e){tt(e.message,'bad')}}
 async function importWorldFile(input){const f=input.files[0];if(!f)return;try{const card=JSON.parse(await f.text());const name=await uiPrompt('导入世界观','导入名称（留空使用卡内名称）','');if(name===null){return}await ap('import/world',{card,name:name.trim()});markLocal('worlds_changed');tt('世界卡已导入');lw()}catch(e){tt(e.message,'bad')}finally{input.value=''}}
 
-/* ================= 世界与图鉴：种族/职业库 ================= */
+/* ══════════════════════════════════════════════
+   AI 助手（生成/补完/润色）
+   ══════════════════════════════════════════════ */
+let _aiBusy=false;
+async function _aiPost(endpoint,body){if(_aiBusy){tt('AI 正在处理上一条请求…','bad');return null}_aiBusy=true;
+  try{return await ap(endpoint,body||{})}finally{_aiBusy=false}}
+function _ideaModal(title,placeholder){return new Promise(res=>{
+  mo('<h3>'+esc(title)+'</h3><div class="fg"><label>灵感 / 要求（越具体效果越好）</label><textarea id="ai-idea" rows="4" placeholder="'+esc(placeholder||'')+'"></textarea></div>'+
+     '<div class="ma"><button class="btn" id="ai-c">取消</button><button class="btn btn-ai" id="ai-ok">🤖 开始生成</button></div>',
+     ()=>res(null));
+  document.getElementById('ai-c').onclick=()=>{_modalCancel=null;mc();res(null)};
+  document.getElementById('ai-ok').onclick=()=>{const v=document.getElementById('ai-idea').value.trim();if(!v){tt('请先填写灵感','bad');return}_modalCancel=null;mc();res(v)};
+})}
+async function aiCompleteWorld(){
+  if(!_wsource){tt('新建世界请先保存，再用 AI 补全','bad');return}
+  const keepName=_wsource;
+  tt('AI 正在补全，约需十几秒…');
+  try{const r=await _aiPost('ai/complete/world',{name:keepName});
+    if(!r)return;
+    if(r.message){tt(r.message);return}
+    _wtemp=Object.assign(_blankWorld(),r.world);_wtemp._name=keepName;
+    _wNpcEdit=_wPlotEdit=_wClueEdit=_wLocEdit=_wFacEdit=_wEggEdit=-1;
+    mo(_wModalBody());
+    tt('AI 已补全：'+((r.added&&r.added.length)?r.added.join('、'):'无新增')+'（请检查后保存）');
+  }catch(e){tt(e.message,'bad')}}
+async function aiExpand(fieldId){
+  const el=document.getElementById(fieldId);if(!el||!el.value.trim()){tt('先填写内容再润色','bad');return}
+  const original=el.value;
+  tt('AI 正在润色…');
+  try{const r=await _aiPost('ai/expand',{text:original});
+    if(!r)return;
+    el.value=r.text||original;tt('润色完成（可继续修改）');
+  }catch(e){tt(e.message,'bad')}}
+async function archAI(type){
+  const idea=await _ideaModal('🤖 AI 生成'+(type==='race'?'种族':'职业'),'例如：以歌谣驱动符文的流浪民族 / 用活体机械改造身体的猎手');
+  if(!idea)return;
+  tt('AI 正在生成，约需十几秒…');
+  try{const r=await _aiPost('ai/generate',{task:'archetype',prompt:idea,type:type});
+    if(!r)return;
+    _archEditName=null;_archEditSrc=null;
+    _openArchEditor(r.draft,type);
+    tt('草稿已生成，请检查后保存');
+  }catch(e){tt(e.message,'bad')}}
+async function charAI(){
+  const idea=await _ideaModal('🤖 AI 生成角色','例如：背负灭门之仇的星港船匠学徒，沉默寡言但擅长改装机械');
+  if(!idea)return;
+  tt('AI 正在生成角色…');
+  try{const r=await _aiPost('ai/generate',{task:'character',prompt:idea});
+    if(!r)return;
+    ce('',r.draft);
+    tt('角色草稿已生成，请检查后保存');
+  }catch(e){tt(e.message,'bad')}}
+
+/* ══════════════════════════════════════════════
+   种族/职业图鉴库
+   ══════════════════════════════════════════════ */
 let _subTab='world';                         // 页内子页：world / race / job
 const _archCache={race:[],job:[]};           // 图鉴列表缓存（[name, archetype]）
-let _archEditName=null,_archEditSrc=null;    // 图鉴编辑暂存（编辑时名称锁定，不做重命名）
+let _archEditName=null,_archEditSrc=null;    // 图鉴编辑暂存（编辑时名称锁定）
 const ATTR_CN={str:'力量',agi:'敏捷',spr:'精神'};
 function aswitch(t){
   _subTab=t;
@@ -507,17 +666,26 @@ async function la(type){
     if(d&&typeof d==='object'&&d.archetypes&&typeof d.archetypes==='object')d=d.archetypes;
     const e=entriesOf(d);_archCache[type]=e;
     const cnt=document.getElementById('ac-'+type);if(cnt)cnt.textContent='共 '+e.length+' 个';
-    if(!e.length){el.innerHTML='<div class="loading">暂无'+(type==='race'?'种族':'职业')+'条目，点击右上角「+ 新建」</div>';return}
-    el.innerHTML=e.map(x=>archCard(x[0],x[1],type)).join('')}
+    const kw=(gv(type+'-search')||'').trim().toLowerCase();
+    const filtered=e.filter(([n,a])=>{if(!kw)return true;
+      return _matchSearch(n,kw)||_matchSearch(a&&a.description,kw)||_matchSearch((a&&a.tags||[]).join(','),kw)||
+        _matchSearch((a&&a.innate_passives||[]).map(t=>typeof t==='string'?t:t&&t.name).join(','),kw)||
+        _matchSearch((a&&a.job_skills||[]).map(s=>s&&s.name).join(','),kw)});
+    if(!e.length){el.innerHTML='<div class="loading">暂无'+(type==='race'?'种族':'职业')+'条目，点击右上角「+ 新建」或「🤖 AI 生成」</div>';return}
+    if(!filtered.length){el.innerHTML='<div class="loading">没有匹配「'+esc(kw)+'」的条目</div>';return}
+    el.innerHTML=filtered.map(x=>archCard(x[0],x[1],type)).join('')}
   catch(e){el.innerHTML='<div class="loading" style="color:var(--danger)">'+esc(e.message)+'</div>'}}
 
 function archCard(n,a,type){
   a=a||{};const isRace=(a.type||type)==='race';
   const ab=a.attr_bonus||{};
   const chips=['str','agi','spr'].filter(k=>+ab[k]).map(k=>'<span class="st">'+ATTR_CN[k]+(ab[k]>0?'+':'')+ab[k]+'</span>').join(' ')||'<span style="color:var(--dim)">无补正</span>';
-  const mid=isRace?('天赋：'+esc((a.innate_passives||[]).join('、')||'无')+'｜负面：'+esc((a.innate_negatives||[]).join('、')||'无'))
-                  :('技能：'+(a.job_skill&&a.job_skill.name?esc(a.job_skill.name)+((a.job_skill.desc)?' - '+esc(clampText(a.job_skill.desc,30)):''):'无'));
-  const full=isRace?('天赋 '+(a.innate_passives||[]).join('、')+'；负面 '+(a.innate_negatives||[]).join('、')):('技能 '+(a.job_skill&&a.job_skill.name||'无'));
+  const traits=(a.innate_passives||[]).map(t=>typeof t==='string'?t:(t&&t.name)||'').filter(Boolean);
+  const negs=(a.innate_negatives||[]).map(t=>typeof t==='string'?t:(t&&t.name)||'').filter(Boolean);
+  const skills=(a.job_skills||[]).map(s=>s&&s.name).filter(Boolean);
+  const mid=isRace?('天赋：'+esc(traits.join('、')||'无')+'｜负面：'+esc(negs.join('、')||'无'))
+                  :('技能：'+esc(skills.join('、')||'无'));
+  const full=isRace?('天赋 '+(traits.join('、')||'无')+'；负面 '+(negs.join('、')||'无')):('技能 '+(skills.join('、')||'无'));
   return `<div class="card" onclick="ae('${jsq(n)}')">
     <h3>${esc(a.name||n)} <span class="badge"${isRace?'':' style="background:rgba(156,207,216,0.15);color:var(--accent2)"'}>${isRace?'种族':'职业'}</span>${a.builtin?' <span class="badge" style="background:rgba(246,193,119,0.16);color:var(--warn)">内置</span>':''}</h3>
     ${a.description?`<p>${esc(a.description)}</p>`:'<p style="color:var(--dim)">暂无描述</p>'}
@@ -525,29 +693,59 @@ function archCard(n,a,type){
     <div title="${esc(full)}" style="font-size:12px;color:var(--dim);margin-top:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${mid}</div>
     <div style="margin-top:8px"><button class="btn btn-sm" onclick="event.stopPropagation();ae('${jsq(n)}')">编辑</button> <button class="btn btn-sm btn-d" onclick="event.stopPropagation();da('${jsq(n)}')">删除</button></div></div>`}
 
+/* ── 图鉴编辑器（含动态特质/技能行） ── */
+function _traitRowsHtml(containerId,list){
+  return (list||[]).map(t=>{const name=typeof t==='string'?t:(t&&t.name)||'';const desc=typeof t==='string'?'':(t&&t.desc)||'';
+    return '<div class="rowitem"><input class="tn" placeholder="名称" value="'+esc(name)+'"><input class="td" placeholder="效果描述（可空）" value="'+esc(desc)+'"><button class="btn btn-d btn-sm" onclick="this.parentElement.remove()">×</button></div>'}).join('')
+}
+function _openArchEditor(a,type){
+  a=a||{};const et=(a.type)||type||'race';
+  const ab=a.attr_bonus||{};
+  const num=k=>{const v=ab[k];return (typeof v==='number'&&Number.isFinite(v))?v:0};
+  const lock=!!_archEditName;
+  const passiveRows=_traitRowsHtml('x',a.innate_passives);
+  const negRows=_traitRowsHtml('x',a.innate_negatives);
+  const skillRows=(a.job_skills||[]).map(s=>'<div class="rowitem"><input class="sn" placeholder="技能名" value="'+esc(s.name||'')+'"><input class="sd" placeholder="技能效果" value="'+esc(s.desc||'')+'"><button class="btn btn-d btn-sm" onclick="this.parentElement.remove()">×</button></div>').join('');
+  mo('<h3>'+(lock?'编辑':'新建')+(et==='race'?'种族':'职业')+(lock?' - '+esc(_archEditName):'')+'</h3>'+
+    '<div class="fr"><div class="fg"><label>名称'+(lock?'（编辑时不可修改）':'')+'</label><input id="ar-n" value="'+esc(lock?_archEditName:(a.name||''))+'"'+(lock?' disabled':'')+'></div>'+
+    '<div class="fg" style="flex:0.5"><label>类型</label><select id="ar-ty"'+(lock?' disabled':'')+' onchange="arTypeUI()"><option value="race"'+(et==='race'?' selected':'')+'>种族</option><option value="job"'+(et==='job'?' selected':'')+'>职业</option></select></div></div>'+
+    '<div class="fg"><label>描述</label><textarea id="ar-d" rows="3">'+esc(a.description||'')+'</textarea></div>'+
+    '<div class="fr"><div class="fg"><label>力量补正（-3 ~ +3）</label><input id="ar-str" type="number" min="-3" max="3" value="'+num('str')+'"></div>'+
+    '<div class="fg"><label>敏捷补正（-3 ~ +3）</label><input id="ar-agi" type="number" min="-3" max="3" value="'+num('agi')+'"></div>'+
+    '<div class="fg"><label>精神补正（-3 ~ +3）</label><input id="ar-spr" type="number" min="-3" max="3" value="'+num('spr')+'"></div></div>'+
+    '<div id="ar-race-f" style="display:'+(et==='race'?'block':'none')+'">'+
+      '<div class="fg"><label>种族叙事（外观与文化，写入 GM 上下文）</label><textarea id="ar-lore" rows="2">'+esc(a.race_lore||'')+'</textarea></div>'+
+      '<div class="cs"><h3>天赋被动</h3><div id="ar-pa-box">'+passiveRows+'</div><button class="btn btn-sm" onclick="archAddTrait(\'ar-pa-box\')">＋ 添加天赋</button></div>'+
+      '<div class="cs"><h3>天赋负面（形成取舍，可空）</h3><div id="ar-ne-box">'+negRows+'</div><button class="btn btn-sm" onclick="archAddTrait(\'ar-ne-box\')">＋ 添加负面</button></div>'+
+    '</div>'+
+    '<div id="ar-job-f" style="display:'+(et==='job'?'block':'none')+'">'+
+      '<div class="cs"><h3>专属技能（1~3 条，要有独到机制）</h3><div id="ar-sk-box">'+skillRows+'</div>'+
+      '<button class="btn btn-sm" onclick="archAddSkill()">＋ 添加技能</button></div>'+
+      '<div class="fg"><label>玩法建议</label><textarea id="ar-ps" rows="2">'+esc(a.play_style||'')+'</textarea></div>'+
+    '</div>'+
+    '<div class="fr"><div class="fg"><label>推荐阶层提示</label><input id="ar-ph" value="'+esc(a.power_hint||'')+'" placeholder="如：训练者~精英"></div>'+
+    '<div class="fg"><label>标签（逗号分隔）</label><input id="ar-tg" value="'+esc((a.tags||[]).join(', '))+'"></div></div>'+
+    '<div class="ma"><button class="btn" onclick="mc()">取消</button><button class="btn btn-p" onclick="sa()">保存</button></div>');
+}
 function ae(n){
   let a=null;
   if(n){const hit=(_archCache[_subTab]||[]).find(x=>x[0]===n);if(hit)a=hit[1]}
   _archEditName=n||null;_archEditSrc=a;
-  const et=(a&&a.type)||(_subTab==='job'?'job':'race');
-  const ab=(a&&a.attr_bonus)||{};
-  const num=k=>{const v=ab[k];return (typeof v==='number'&&Number.isFinite(v))?v:0};
-  const lock=!!n;
-  mo('<h3>'+(lock?'编辑':'新建')+(et==='race'?'种族':'职业')+(lock?' - '+esc(n):'')+'</h3>'+
-    '<div class="fr"><div class="fg"><label>名称'+(lock?'（编辑时不可修改，如需重命名请删除后新建）':'')+'</label><input id="ar-n" value="'+esc(lock?n:'')+'"'+(lock?' disabled':'')+'></div>'+
-    '<div class="fg" style="flex:0.5"><label>类型</label><select id="ar-ty"'+(lock?' disabled':'')+' onchange="arTypeUI()"><option value="race"'+(et==='race'?' selected':'')+'>种族</option><option value="job"'+(et==='job'?' selected':'')+'>职业</option></select></div></div>'+
-    '<div class="fg"><label>描述</label><textarea id="ar-d" rows="3">'+esc((a&&a.description)||'')+'</textarea></div>'+
-    '<div class="fr"><div class="fg"><label>力量补正（-3 ~ +3）</label><input id="ar-str" type="number" min="-3" max="3" value="'+num('str')+'"></div>'+
-    '<div class="fg"><label>敏捷补正（-3 ~ +3）</label><input id="ar-agi" type="number" min="-3" max="3" value="'+num('agi')+'"></div>'+
-    '<div class="fg"><label>精神补正（-3 ~ +3）</label><input id="ar-spr" type="number" min="-3" max="3" value="'+num('spr')+'"></div></div>'+
-    '<div id="ar-race-f" style="display:'+(et==='race'?'block':'none')+'"><div class="fr"><div class="fg"><label>天赋被动（逗号分隔）</label><input id="ar-pa" value="'+esc(((a&&a.innate_passives)||[]).join(', '))+'"></div>'+
-    '<div class="fg"><label>天赋负面（逗号分隔）</label><input id="ar-ne" value="'+esc(((a&&a.innate_negatives)||[]).join(', '))+'"></div></div></div>'+
-    '<div id="ar-job-f" style="display:'+(et==='job'?'block':'none')+'"><div class="fr"><div class="fg"><label>专属技能名</label><input id="ar-sk" value="'+esc((a&&a.job_skill&&a.job_skill.name)||'')+'"></div></div>'+
-    '<div class="fg"><label>专属技能描述</label><input id="ar-skd" value="'+esc((a&&a.job_skill&&a.job_skill.desc)||'')+'"></div></div>'+
-    '<div class="fg"><label>标签（逗号分隔）</label><input id="ar-tg" value="'+esc(((a&&a.tags)||[]).join(', '))+'"></div>'+
-    '<div class="ma"><button class="btn" onclick="mc()">取消</button><button class="btn btn-p" onclick="sa()">保存</button></div>');
+  _openArchEditor(a||{},_subTab==='job'?'job':'race');
 }
 function arTypeUI(){const t=gv('ar-ty');const r=document.getElementById('ar-race-f'),j=document.getElementById('ar-job-f');if(r)r.style.display=t==='race'?'block':'none';if(j)j.style.display=t==='job'?'block':'none'}
+function archAddTrait(boxId){const box=document.getElementById(boxId);if(!box)return;
+  const div=document.createElement('div');div.className='rowitem';
+  div.innerHTML='<input class="tn" placeholder="名称"><input class="td" placeholder="效果描述（可空）"><button class="btn btn-d btn-sm" onclick="this.parentElement.remove()">×</button>';
+  box.appendChild(div);div.querySelector('.tn').focus()}
+function archAddSkill(){const box=document.getElementById('ar-sk-box');if(!box)return;
+  if(box.children.length>=3){tt('专属技能最多 3 条','bad');return}
+  const div=document.createElement('div');div.className='rowitem';
+  div.innerHTML='<input class="sn" placeholder="技能名"><input class="sd" placeholder="技能效果"><button class="btn btn-d btn-sm" onclick="this.parentElement.remove()">×</button>';
+  box.appendChild(div);div.querySelector('.sn').focus()}
+function _collectRows(boxId,nameCls,descCls){const out=[];document.querySelectorAll('#'+boxId+' .rowitem').forEach(r=>{
+  const n=((r.querySelector('.'+nameCls)||{}).value||'').trim();if(!n)return;
+  out.push({name:n,desc:((r.querySelector('.'+descCls)||{}).value||'').trim()})});return out}
 async function sa(){
   const n=gv('ar-n').trim();
   if(!n){tt('名称必填','bad');return}
@@ -555,12 +753,15 @@ async function sa(){
   const num=k=>{let v=parseInt(document.getElementById('ar-'+k).value,10);if(!Number.isFinite(v))v=0;return Math.max(-3,Math.min(3,v))};
   const item={name:n,type:et,description:gv('ar-d').trim(),
     attr_bonus:{str:num('str'),agi:num('agi'),spr:num('spr')},
-    innate_passives:et==='race'?_entryParts(gv('ar-pa')):[],   /* 复用世界观条目的分隔解析（中英文逗号/顿号/换行） */
-    innate_negatives:et==='race'?_entryParts(gv('ar-ne')):[],
-    job_skill:et==='job'?(gv('ar-sk').trim()?{name:gv('ar-sk').trim(),desc:gv('ar-skd').trim()}:null):null,
-    tags:_entryParts(gv('ar-tg')),
+    race_lore:et==='race'?gv('ar-lore').trim():'',
+    innate_passives:et==='race'?_collectRows('ar-pa-box','tn','td'):[],
+    innate_negatives:et==='race'?_collectRows('ar-ne-box','tn','td'):[],
+    job_skills:et==='job'?_collectRows('ar-sk-box','sn','sd'):[],
+    play_style:et==='job'?gv('ar-ps').trim():'',
+    power_hint:gv('ar-ph').trim(),
+    tags:csv(gv('ar-tg')),
     builtin:!!(_archEditSrc&&_archEditSrc.builtin)};
-  /* 编辑时透传 created_at 等原字段；name/type 以表单为准，name 已在 body（桥的 apiPost 不支持 query 参数） */
+  /* 编辑时透传 created_at 等原字段；name/type 以表单为准 */
   const payload=Object.assign({},_archEditSrc||{},item);
   try{await ap('archetype/save',payload);
     markLocal('archetypes_changed');tt('已保存');mc();
@@ -574,40 +775,239 @@ async function da(n){
   try{await ap('archetype/delete',{name:n});markLocal('archetypes_changed');tt('已删除');la(_subTab)}
   catch(e){tt(e.message,'bad')}}
 
-/* ================= 角色卡库 ================= */
+/* ══════════════════════════════════════════════
+   角色卡库（全量编辑器）
+   ══════════════════════════════════════════════ */
+const GRADE_COEFF={F:.5,E:.7,D:.85,C:1,B:1.3,A:1.7,'A+':1.85,S:2.2};
+const GRADES=['F','E','D','C','B','A','A+','S'];
+function bandName(p){if(p>=9999)return '神明级';if(p>=1000)return '神话级';if(p>=501)return '灾厄级';if(p>=151)return '超凡';if(p>=51)return '精英';if(p>=21)return '训练者';return '普通人'}
+function gradeOpts(cur){return GRADES.map(g=>'<option value="'+g+'"'+(g===cur?' selected':'')+'>'+g+'</option>').join('')}
+function _archHit(type,name){return (_archCache[type]||[]).find(x=>x[0]===name||((x[1]||{}).name===name))||null}
+function buildRaceField(name){const hit=name?_archHit('race',name):null;
+  if(hit&&hit[1]){const a=hit[1];const ab=a.attr_bonus||{};
+    return {name:a.name,description:a.description||'',race_lore:a.race_lore||'',
+      innate_passives:structTraits(a.innate_passives),innate_negatives:structTraits(a.innate_negatives),
+      attr_bonus:{str:+ab.str||0,agi:+ab.agi||0,spr:+ab.spr||0}}}
+  return {name:name||'',description:'',race_lore:'',innate_passives:[],innate_negatives:[],attr_bonus:{str:0,agi:0,spr:0}}}
+function buildJobField(name){const hit=name?_archHit('job',name):null;
+  if(hit&&hit[1]){const a=hit[1];const ab=a.attr_bonus||{};
+    const skills=(a.job_skills||[]).map(s=>({name:(s&&s.name)||'',desc:(s&&s.desc)||''})).filter(s=>s.name);
+    return {name:a.name,description:a.description||'',play_style:a.play_style||'',job_skills:skills,
+      job_skill:skills[0]?{name:skills[0].name,desc:skills[0].desc}:null,
+      attr_bonus:{str:+ab.str||0,agi:+ab.agi||0,spr:+ab.spr||0}}}
+  return {name:name||'',description:'',play_style:'',job_skills:[],job_skill:null,attr_bonus:{str:0,agi:0,spr:0}}}
+function previewRPG(){
+  if(!_ctemp)return null;
+  const base=_ctemp.attr||{};
+  const rb=(_ctemp.race&&_ctemp.race.attr_bonus)||{},jb=(_ctemp.job&&_ctemp.job.attr_bonus)||{};
+  const s=Math.max(1,(+base.str||5)+(+rb.str||0)+(+jb.str||0));
+  const a2=Math.max(1,(+base.agi||5)+(+rb.agi||0)+(+jb.agi||0));
+  const p=Math.max(1,(+base.spr||5)+(+rb.spr||0)+(+jb.spr||0));
+  const ch=_ctemp.charm||'C',lu=_ctemp.luck||'C';
+  let power=Math.round((s*0.4+a2*0.3+p*0.3)*((GRADE_COEFF[ch]||1)+(GRADE_COEFF[lu]||1))/2);
+  const ovEl=document.getElementById('cpov');
+  const pov=ovEl?(+ovEl.value||0):(+_ctemp.power_override||0);
+  if(pov>0)power=Math.min(9999,pov);
+  return {s,a:a2,p,hp:Math.round(100*(1+0.1*s)),mp:Math.round(100*(1+0.1*p)),power,band:bandName(power)}}
+
 async function lc(){const el=document.getElementById('cl');el.innerHTML='<div class="loading">加载中...</div>';
   try{const d=await ag('characters');const e=entriesOf(d);_charsData={};e.forEach(([k,v])=>{_charsData[k]=v});document.getElementById('cc').textContent='共 '+e.length+' 个';
-    if(!e.length){el.innerHTML='<div class="loading">暂无角色卡，在聊天里「创建角色」后几秒内会自动出现</div>';return}
-    el.innerHTML=e.map(([u,c])=>{const a=c.attr||{};return `<div class="card" onclick="ce('${jsq(u)}')">
-      <h3>${esc(c.name||u)}</h3>
+    const kw=(gv('char-search')||'').trim().toLowerCase();
+    const filtered=e.filter(([u,c])=>{if(!kw)return true;
+      return _matchSearch(u,kw)||_matchSearch(c&&c.name,kw)||_matchSearch(c&&c.description,kw)||
+        _matchSearch(c&&c.race&&c.race.name,kw)||_matchSearch(c&&c.job&&c.job.name,kw)});
+    if(!e.length){el.innerHTML='<div class="loading">暂无角色卡，点击右上角「+ 新建角色」或「🤖 AI 生成角色」</div>';return}
+    if(!filtered.length){el.innerHTML='<div class="loading">没有匹配「'+esc(kw)+'」的角色</div>';return}
+    el.innerHTML=filtered.map(([u,c])=>{const a=c.attr||{};
+      const rn=(c.race&&c.race.name)||'';const jn=(c.job&&c.job.name)||'';
+      return `<div class="card" onclick="ce('${jsq(u)}')">
+      <h3>${esc(c.name||u)}${c.is_random?' <span class="badge" style="background:rgba(246,193,119,0.16);color:var(--warn)">随机</span>':''}${c.has_adventured?'':' <span class="badge" style="background:rgba(62,143,176,0.2);color:var(--good)">未冒险</span>'}</h3>
       <p>${esc(clampText(c.description||'',60))}</p>
-      <div style="display:flex;gap:6px;margin-top:6px;font-size:12px;color:var(--dim);flex-wrap:wrap"><span class="st">ATK ${c.power||0}</span><span class="st">HP ${c.hp||0}</span><span class="st">STR ${a.str||0} AGI ${a.agi||0} SPR ${a.spr||0}</span></div>
-      <div>${c.race?'<span class="badge">'+esc(c.race.name)+'</span>':''}${c.job?'<span class="badge">'+esc(c.job.name)+'</span>':''}</div></div>`}).join('')}
+      <div style="display:flex;gap:6px;margin-top:6px;font-size:12px;color:var(--dim);flex-wrap:wrap"><span class="st">⚔️ ${c.power||0} ${esc(bandName(c.power||0))}</span><span class="st">HP ${c.hp||0}</span><span class="st">力量 ${a.str||0} 敏捷 ${a.agi||0} 精神 ${a.spr||0}</span></div>
+      <div>${rn?'<span class="badge">'+esc(rn)+'</span>':''}${jn?'<span class="badge" style="background:rgba(156,207,216,0.15);color:var(--accent2)">'+esc(jn)+'</span>':''}<span class="badge" style="background:rgba(144,140,170,0.12);color:var(--dim)">${esc(u)}</span></div></div>`}).join('')}
   catch(e){el.innerHTML='<div class="loading" style="color:var(--danger)">'+esc(e.message)+'</div>'}}
 
-async function ce(u){try{const d=await ag('character/get',{uid:u});const c=(d&&d.character&&typeof d.character==='object')?d.character:(d||{});_ctemp=c;_cuid=u;const a=c.attr||{};
-  const grades='<span style="color:var(--accent)">魅力:'+esc(c.charm)+'</span> <span style="color:var(--accent2)">幸运:'+esc(c.luck)+'</span>';
-  const cid='rc'+String(u).replace(/[^a-z0-9]/gi,'');
-  mo(`<h3><span class="ico-lg">C</span> ${esc(c.name||u)} <span style="font-size:12px;color:var(--dim)">(${esc(u)})</span></h3>
-    <div class="rchart"><canvas id="${cid}"></canvas></div>
-    <div style="text-align:center;font-size:11px;color:var(--dim);margin:2px 0">ATK ${c.power||0}  |  HP ${c.hp||0}  |  MP ${c.mp||0}  |  ${grades}</div>
-    <div class="fg"><label>名字</label><input id="cn" value="${esc(c.name||'')}"></div>
-    <div class="fg"><label>描述</label><textarea id="cd" rows="2">${esc(c.description||'')}</textarea></div>
-    <div class="fr"><div class="fg"><label>力量</label><input id="cs" type="number" value="${a.str===undefined?5:a.str}"></div>
-    <div class="fg"><label>敏捷</label><input id="ca" type="number" value="${a.agi===undefined?5:a.agi}"></div>
-    <div class="fg"><label>精神</label><input id="csp" type="number" value="${a.spr===undefined?5:a.spr}"></div></div>
-    <div class="ma"><button class="btn" onclick="exportCharacter('${jsq(u)}')">导出 V3</button><button class="btn" onclick="mc()">取消</button><button class="btn btn-d" onclick="dc('${jsq(u)}')">删除</button><button class="btn btn-p" onclick="sc('${jsq(u)}')">保存</button></div>`);
-  setTimeout(()=>{const el=document.getElementById(cid);if(el)drawRadar(el,c.attr||{},c.charm||'C',c.luck||'C')},60)}
-  catch(e){tt(e.message,'bad')}}
-
+/* ── 角色卡编辑器 ── */
+let _cBookEdit=null;   // 个人世界书编辑暂存
+function _skillGroupEditor(group,title){
+  const list=(_ctemp.skills&&_ctemp.skills[group])||[];
+  const rows=list.map((s,i)=>'<div class="rowitem"><input class="sk-n" value="'+esc(s.name||'')+'" placeholder="名称"><input class="sk-d" value="'+esc(s.desc||s.name||'')+'" placeholder="描述"><button class="btn btn-d btn-sm" onclick="this.parentElement.remove()">×</button></div>').join('');
+  return '<div class="cs"><h3>'+title+'（最多 3 条）</h3><div id="cskills-'+group+'">'+rows+'</div>'+
+    '<button class="btn btn-sm" onclick="cAddSkill(\''+group+'\')">＋ 添加</button></div>'}
+function cAddSkill(group){const box=document.getElementById('cskills-'+group);if(!box)return;
+  if(box.children.length>=3){tt('已达上限 3 条','bad');return}
+  const div=document.createElement('div');div.className='rowitem';
+  div.innerHTML='<input class="sk-n" placeholder="名称"><input class="sk-d" placeholder="描述"><button class="btn btn-d btn-sm" onclick="this.parentElement.remove()">×</button>';
+  box.appendChild(div);div.querySelector('.sk-n').focus()}
+function _cModalBody(){
+  const c=_ctemp;const a=c.attr||{};
+  const isNew=_cIsNew;
+  const worldOpts=['<option value=""'+(!c.world?' selected':'')+'>（不关联）</option>'].concat(_cfgWorlds.map(w=>'<option value="'+esc(w)+'"'+(c.world===w?' selected':'')+'>'+esc(w)+'</option>'));
+  if(c.world&&_cfgWorlds.indexOf(c.world)<0)worldOpts.push('<option value="'+esc(c.world)+'" selected>'+esc(c.world)+'（当前）</option>');
+  const raceOpts=['<option value=""'+(!(c.race&&c.race.name)?' selected':'')+'>（无种族）</option>'].concat(_archCache.race.map(([n,x])=>'<option value="'+esc((x&&x.name)||n)+'"'+((c.race&&c.race.name)===((x&&x.name)||n)?' selected':'')+'>'+esc((x&&x.name)||n)+'</option>'));
+  const jobOpts=['<option value=""'+(!(c.job&&c.job.name)?' selected':'')+'>（无职业）</option>'].concat(_archCache.job.map(([n,x])=>'<option value="'+esc((x&&x.name)||n)+'"'+((c.job&&c.job.name)===((x&&x.name)||n)?' selected':'')+'>'+esc((x&&x.name)||n)+'</option>'));
+  const raceDetail=_raceDetailText(c.race);const jobDetail=_jobDetailText(c.job);
+  const bookEntries=(c.character_book&&c.character_book.entries)||[];
+  const bookHtml=bookEntries.map(e=>'<div class="item"><div class="kv"><strong>'+esc(e.name||'未命名条目')+'</strong> '+(e.enabled!==false?'':'<span class="badge">禁用</span>')+'<br><span style="color:var(--dim)">关键词: '+esc((e.keys||[]).join(', ')||'无')+'</span></div><div class="acts"><button class="btn btn-sm" onclick="cbookEdit(\''+jsq(e.id)+'\')">编辑</button><button class="btn btn-sm btn-d" onclick="cbookDel(\''+jsq(e.id)+'\')">删除</button></div></div>').join('');
+  return `<div class="tabs">
+    <button class="act" data-t="cbasic" onclick="ctab('cbasic')">基础</button>
+    <button data-t="cnum" onclick="ctab('cnum')">数值</button>
+    <button data-t="carch" onclick="ctab('carch')">种族职业</button>
+    <button data-t="cskill" onclick="ctab('cskill')">能力</button>
+    <button data-t="cadv" onclick="ctab('cadv')">设定</button>
+    <button data-t="cbook" onclick="ctab('cbook')">个人世界书 (${bookEntries.length})</button>
+  </div>
+  <div id="ctc-cbasic" class="tc act">
+    <div class="fr"><div class="fg"><label>UID（${isNew?'创建用，唯一标识':'不可修改'}）</label><input id="cn-uid" value="${esc(_cuid)}"${isNew?'':' disabled'}></div>
+    <div class="fg"><label>名字</label><input id="cn" value="${esc(c.name||'')}"></div></div>
+    <div class="fg"><label>描述</label><textarea id="cd" rows="3">${esc(c.description||'')}</textarea>
+      <button class="btn btn-sm btn-ai" style="margin-top:6px" onclick="aiExpand('cd')">🤖 AI 润色</button></div>
+    <div class="fr"><div class="fg"><label>关联世界</label><select id="cw">${worldOpts.join('')}</select></div>
+    <div class="fg"><label>社会地位（该世界中的身份）</label><input id="cstatus" value="${esc(c.social_status||'')}"></div></div>
+    <div class="fr"><div class="fg"><label>标签（逗号分隔）</label><input id="ctags" value="${esc((c.tags||[]).join(', '))}"></div>
+    <div class="fg"><label>角色版本</label><input id="cver" value="${esc(c.character_version||'1.0.0')}"></div></div>
+    <div class="fg"><label>作者注记</label><textarea id="cnotes" rows="2">${esc(c.creator_notes||'')}</textarea></div>
+  </div>
+  <div id="ctc-cnum" class="tc">
+    <div id="cnum-preview" class="previewbox"></div>
+    <div class="fr"><div class="fg"><label>力量（基础值）</label><input id="cs" type="number" min="1" value="${a.str===undefined?5:a.str}"></div>
+    <div class="fg"><label>敏捷（基础值）</label><input id="ca" type="number" min="1" value="${a.agi===undefined?5:a.agi}"></div>
+    <div class="fg"><label>精神（基础值）</label><input id="csp" type="number" min="1" value="${a.spr===undefined?5:a.spr}"></div></div>
+    <div class="fr"><div class="fg"><label>魅力评级（F~S）</label><select id="ccharm">${gradeOpts(c.charm||'C')}</select></div>
+    <div class="fg"><label>幸运评级（F~S）</label><select id="cluck">${gradeOpts(c.luck||'C')}</select></div>
+    <div class="fg"><label>战力锚点覆盖（留空=公式自动）</label><input id="cpov" type="number" min="0" max="9999" placeholder="如：9999 表示神明级" value="${c.power_override===undefined||c.power_override===null?'':c.power_override}"></div></div>
+    <label class="ckline"><input type="checkbox" id="cadv-flag"${c.has_adventured?' checked':''}> 已完成首次冒险（勾选后属性锁定，仅结算可成长）</label>
+    <label class="ckline"><input type="checkbox" id="crand"${c.is_random?' checked':''}> 随机角色（勾选后禁止修改属性）</label>
+  </div>
+  <div id="ctc-carch" class="tc">
+    <div class="fg"><label>种族（来自图鉴，选择后自动套用补正与天赋；留空为无）</label><select id="crace" onchange="cRaceChanged()">${raceOpts.join('')}</select></div>
+    <div id="crace-detail" class="previewbox">${raceDetail}</div>
+    <div class="fg"><label>职业（来自图鉴，选择后自动套用补正与专属技能；留空为无）</label><select id="cjob" onchange="cJobChanged()">${jobOpts.join('')}</select></div>
+    <div id="cjob-detail" class="previewbox">${jobDetail}</div>
+    <div class="hintline">自定义种族/职业：请先在「世界与图鉴」页创建图鉴条目，再回到这里选择；直接给角色设置图鉴外的名字将得到零补正。</div>
+  </div>
+  <div id="ctc-cskill" class="tc">
+    <div class="hintline">能力标签用于叙事判定锚点：主动能力是角色可以主动使出的招式/专长，被动特质是常驻生效的天赋或体质。</div>
+    ${_skillGroupEditor('active','⚡ 主动能力')}
+    ${_skillGroupEditor('passive','🌀 被动特质')}
+  </div>
+  <div id="ctc-cadv" class="tc">
+    <div class="fg"><label>性格（personality）</label><textarea id="cpersonality" rows="2">${esc(c.personality||'')}</textarea></div>
+    <div class="fg"><label>情景（scenario）</label><textarea id="cscenario" rows="2">${esc(c.scenario||'')}</textarea></div>
+    <div class="fg"><label>开场白（first_mes）</label><textarea id="cfirst" rows="2">${esc(c.first_mes||'')}</textarea></div>
+    <div class="fg"><label>对话示例（mes_example）</label><textarea id="cmes" rows="2">${esc(c.mes_example||'')}</textarea></div>
+    <div class="fg"><label>角色系统指令（system_prompt，注入 GM 上下文）</label><textarea id="csys" rows="3">${esc(c.system_prompt||'')}</textarea></div>
+    <div class="fg"><label>历史后指令（post_history_instructions）</label><textarea id="cphi" rows="2">${esc(c.post_history_instructions||'')}</textarea></div>
+    <div class="fg"><label>备用开场白（每行一条）</label><textarea id="calt" rows="2">${esc((c.alternate_greetings||[]).join('\n'))}</textarea></div>
+  </div>
+  <div id="ctc-cbook" class="tc">${bookHtml||'<div style="color:var(--dim);padding:10px">暂无个人世界书条目（角色专属设定，随角色注入冒险）</div>'}
+    <div class="cs" style="margin-top:14px"><h3>新建 / 编辑条目</h3></div>
+    <input id="cbook-id" type="hidden">
+    <div class="fg"><label>名称</label><input id="cbook-name"></div>
+    <div class="fr"><div class="fg"><label>关键词（逗号分隔）</label><input id="cbook-keys"></div></div>
+    <div class="fg"><label>内容</label><textarea id="cbook-content" rows="3"></textarea></div>
+    <div class="fr"><label class="ckline"><input id="cbook-constant" type="checkbox"> 常驻</label><label class="ckline"><input id="cbook-enabled" type="checkbox" checked> 启用</label></div>
+    <button class="btn btn-sm btn-p" onclick="cbookSave()">保存到个人世界书</button>
+  </div>`}
+function _raceDetailText(race){if(!race||!race.name)return '<span style="color:var(--dim)">未设置种族</span>';
+  const ab=race.attr_bonus||{};const chips=['str','agi','spr'].filter(k=>+ab[k]).map(k=>ATTR_CN[k]+(ab[k]>0?'+':'')+ab[k]).join(' ')||'无补正';
+  const traits=structTraits(race.innate_passives).map(t=>t.name+(t.desc?'（'+t.desc+'）':'')).join('；')||'无';
+  const negs=structTraits(race.innate_negatives).map(t=>t.name+(t.desc?'（'+t.desc+'）':'')).join('；')||'无';
+  return '<b>'+esc(race.name)+'</b>｜补正：'+esc(chips)+'\n天赋：'+esc(traits)+'\n负面：'+esc(negs)+(race.race_lore?'\n'+esc(clampText(race.race_lore,80)):'')}
+function _jobDetailText(job){if(!job||!job.name)return '<span style="color:var(--dim)">未设置职业</span>';
+  const ab=job.attr_bonus||{};const chips=['str','agi','spr'].filter(k=>+ab[k]).map(k=>ATTR_CN[k]+(ab[k]>0?'+':'')+ab[k]).join(' ')||'无补正';
+  const skills=(job.job_skills||[]).map(s=>(s.name||'')+(s.desc?'（'+s.desc+'）':'')).join('；')||'无';
+  return '<b>'+esc(job.name)+'</b>｜补正：'+esc(chips)+'\n专属技能：'+esc(skills)+(job.play_style?'\n玩法：'+esc(clampText(job.play_style,80)):'')}
+function ctab(act){
+  document.querySelectorAll('#mct .tabs button').forEach(e=>e.classList.remove('act'));
+  document.querySelectorAll('#mct .tc').forEach(e=>e.classList.remove('act'));
+  const bt=document.querySelector('#mct .tabs button[data-t="'+act+'"]');if(bt)bt.classList.add('act');
+  const el=document.getElementById('ctc-'+act);if(el)el.classList.add('act')}
+function _updateCNumPreview(){
+  _collectCTempQuiet();
+  const v=previewRPG();const el=document.getElementById('cnum-preview');if(!el||!v)return;
+  el.innerHTML='<b>面板预览</b>（最终以保存后服务端计算为准）\n'+
+    '三维（含补正）：力量 <b>'+v.s+'</b>｜敏捷 <b>'+v.a+'</b>｜精神 <b>'+v.p+'</b>\n'+
+    'HP <b>'+v.hp+'</b>｜MP <b>'+v.mp+'</b>｜战力 <b>'+v.power+'</b>｜阶层 <b>'+v.band+'</b>'}
+function _collectCTempQuiet(){
+  const c=_ctemp;
+  if(document.getElementById('cn'))c.name=gv('cn').trim();
+  if(document.getElementById('cd'))c.description=gv('cd').trim();
+  if(document.getElementById('cw'))c.world=gv('cw');
+  if(document.getElementById('cstatus'))c.social_status=gv('cstatus').trim();
+  if(document.getElementById('ctags'))c.tags=csv(gv('ctags'));
+  if(document.getElementById('cver'))c.character_version=gv('cver').trim();
+  if(document.getElementById('cnotes'))c.creator_notes=gv('cnotes').trim();
+  if(document.getElementById('cs'))c.attr={str:Math.max(1,+gv('cs')||5),agi:Math.max(1,+gv('ca')||5),spr:Math.max(1,+gv('csp')||5)};
+  if(document.getElementById('ccharm')){c.charm=gv('ccharm');c.luck=gv('cluck')}
+  if(document.getElementById('cpov')){const pov=+gv('cpov')||0;if(pov>0)c.power_override=pov;else delete c.power_override}
+  if(document.getElementById('cadv-flag'))c.has_adventured=document.getElementById('cadv-flag').checked;
+  if(document.getElementById('crand'))c.is_random=document.getElementById('crand').checked;
+  ['active','passive'].forEach(group=>{const box=document.getElementById('cskills-'+group);if(!box)return;
+    const items=[];box.querySelectorAll('.rowitem').forEach(r=>{
+      const n=((r.querySelector('.sk-n')||{}).value||'').trim();if(!n)return;
+      items.push({name:n,desc:((r.querySelector('.sk-d')||{}).value||'').trim(),mastery:group==='active'?'生疏':'常驻',lv:group==='active'?1:0})});
+    c.skills=c.skills||{};c.skills[group]=items});
+  if(document.getElementById('cpersonality')){c.personality=gv('cpersonality');c.scenario=gv('cscenario');
+    c.first_mes=gv('cfirst');c.mes_example=gv('cmes');c.system_prompt=gv('csys');c.post_history_instructions=gv('cphi');
+    c.alternate_greetings=gv('calt').split('\n').map(s=>s.trim()).filter(Boolean)}
+}
+async function ce(u,draft){
+  _cIsNew=!u;_cuid=u||'';_cBookEdit=null;
+  try{
+    if(u){const d=await ag('character/get',{uid:u});_ctemp=(d&&d.character&&typeof d.character==='object')?d.character:(d||{})}
+    else{_ctemp=draft?draft:{name:'',description:'',attr:{str:5,agi:5,spr:5},charm:'C',luck:'C',skills:{active:[],passive:[]},world:'',social_status:'',tags:[],character_book:{entries:[]},has_adventured:false,is_random:false}}
+    _openCharModal('cbasic');
+  }catch(e){tt(e.message,'bad')}}
+function _openCharModal(tab){
+  mo('<h3>'+(_cIsNew?'新建角色卡':'编辑 - '+esc(_ctemp.name||_cuid))+' <span style="font-size:12px;color:var(--dim)">'+(_cIsNew?'':'('+esc(_cuid)+')')+'</span></h3>'+
+    _cModalBody()+
+    '<div class="ma">'+(_cIsNew?'':'<button class="btn" onclick="exportCharacter(\''+jsq(_cuid)+'\')">导出 V3</button>')+
+    '<button class="btn" onclick="mc()">取消</button>'+
+    (_cIsNew?'':'<button class="btn btn-d" onclick="dc(\''+jsq(_cuid)+'\')">删除</button>')+
+    '<button class="btn btn-p" onclick="sc()">保存</button></div>');
+  ctab(tab||'cbasic');
+  _updateCNumPreview();
+  ['cs','ca','csp','ccharm','cluck','cpov','crace','cjob'].forEach(id=>{const el=document.getElementById(id);if(el)el.addEventListener('change',_updateCNumPreview)});
+}
+function cRaceChanged(){_collectCTempQuiet();const name=gv('crace');
+  _ctemp.race=buildRaceField(name);
+  const el=document.getElementById('crace-detail');if(el)el.innerHTML=_raceDetailText(_ctemp.race);
+  _updateCNumPreview()}
+function cJobChanged(){_collectCTempQuiet();const name=gv('cjob');
+  _ctemp.job=buildJobField(name);
+  const el=document.getElementById('cjob-detail');if(el)el.innerHTML=_jobDetailText(_ctemp.job);
+  _updateCNumPreview()}
+/* 个人世界书条目 */
+function cbookEdit(id){const e=((_ctemp.character_book||{}).entries||[]).find(x=>x.id===id);if(!e)return;
+  document.getElementById('cbook-id').value=e.id||'';document.getElementById('cbook-name').value=e.name||'';
+  document.getElementById('cbook-keys').value=(e.keys||[]).join(', ');document.getElementById('cbook-content').value=e.content||'';
+  document.getElementById('cbook-constant').checked=!!e.constant;document.getElementById('cbook-enabled').checked=e.enabled!==false}
+function cbookSave(){const name=gv('cbook-name').trim();if(!name){tt('条目名称必填','bad');return}
+  const id=gv('cbook-id')||uid();
+  const item={id,name,keys:csv(gv('cbook-keys')),content:gv('cbook-content'),constant:document.getElementById('cbook-constant').checked,enabled:document.getElementById('cbook-enabled').checked,priority:10,insertion_order:100,insertion_position:'after_char'};
+  _ctemp.character_book=_ctemp.character_book||{entries:[]};_ctemp.character_book.entries=_ctemp.character_book.entries||[];
+  const i=_ctemp.character_book.entries.findIndex(e=>e.id===id);
+  if(i>=0)_ctemp.character_book.entries[i]=item;else _ctemp.character_book.entries.push(item);
+  document.getElementById('cbook-id').value='';document.getElementById('cbook-name').value='';document.getElementById('cbook-keys').value='';document.getElementById('cbook-content').value='';
+  _openCharModal('cbook');
+  tt('条目已更新，保存角色后写入')}
+function cbookDel(id){_ctemp.character_book.entries=(_ctemp.character_book.entries||[]).filter(e=>e.id!==id);
+  _openCharModal('cbook');
+  tt('条目已删除，保存角色后生效')}
 async function exportCharacter(u){try{await exportDownload('export/character',{uid:u},u+'.json');tt('已导出 '+u+'.json')}catch(e){tt(e.message,'bad')}}
-async function sc(u){try{const p={name:gv('cn').trim(),description:gv('cd').trim(),attr:{str:+gv('cs')||5,agi:+gv('ca')||5,spr:+gv('csp')||5}};
-  const full=Object.assign({},_ctemp||{},p);
-  /* 桥的 apiPost 不支持 query 参数：uid 一并放入 body，后端从 body 读取 */
-  await ap('character/save',Object.assign({},full,{uid:u}));markLocal('characters_changed');tt('已保存');mc();lc()}
+async function sc(){
+  _collectCTempQuiet();
+  const targetUid=_cIsNew?gv('cn-uid').trim():_cuid;
+  if(!targetUid){tt('UID 必填（作为角色唯一标识）','bad');return}
+  if(_cIsNew&&_charsData[targetUid]!==undefined){tt('UID「'+targetUid+'」已存在，请换一个','bad');return}
+  if(!_ctemp.name){tt('名字必填','bad');return}
+  try{
+    const payload=Object.assign({},_ctemp,{uid:targetUid});
+    await ap('character/save',payload);
+    markLocal('characters_changed');tt('已保存（服务端已重算 HP/MP/战力）');mc();lc()}
   catch(e){tt(e.message,'bad')}}
-
-async function dc(u){if(!(await uiConfirm('删除角色「'+(u)+'」？','删除角色')))return;try{await ap('character/delete',{uid:u});markLocal('characters_changed');tt('已删除');mc();lc()}catch(e){tt(e.message,'bad')}}
+async function dc(u){if(!(await uiConfirm('删除角色「'+u+'」？该操作不可恢复。','删除角色')))return;try{await ap('character/delete',{uid:u});markLocal('characters_changed');tt('已删除');mc();lc()}catch(e){tt(e.message,'bad')}}
 
 /* 导入角色：统一“预览 → 选 UID → 覆盖确认”流程（sandbox 无 prompt/confirm，用模态框） */
 function characterImportModal(pv,card){return new Promise(resolve=>{
@@ -645,14 +1045,16 @@ async function importCharacterFile(input){const f=input.files[0];if(!f)return;tr
   markLocal('characters_changed');tt('角色卡已导入');lc();
 }catch(e){tt(e.message,'bad')}finally{input.value=''}}
 
-/* ================= 存档馆 ================= */
+/* ══════════════════════════════════════════════
+   存档馆
+   ══════════════════════════════════════════════ */
 async function ls(){const el=document.getElementById('sl');el.innerHTML='<div class="loading">加载中...</div>';
   try{const d=await ag('saves');const e=entriesOf(d);_savesData={};e.forEach(([k,v])=>{_savesData[k]=v});
     if(!e.length){el.innerHTML='<div class="loading">暂无存档</div>';return}
     el.innerHTML=e.map(([i,s])=>`<div class="card">
       <div style="display:flex;justify-content:space-between;align-items:start"><h3>${esc(s.theme||'冒险')}</h3><span class="sb2 ${s.status==='active'?'go':'pa'}">${s.status==='active'?'进行中':'已暂停'}</span></div>
       <p style="font-size:12px;color:var(--dim);margin:4px 0">${esc(clampText(s.summary||(s.history&&s.history.slice(-1)[0]?s.history.slice(-1)[0].content:'')||'',70))}</p>
-      <div style="font-size:11px;color:var(--dim);margin-top:6px">${s.updated_at||s.created_at?new Date((s.updated_at||s.created_at)*1000).toLocaleString():'—'}</div>
+      <div style="font-size:11px;color:var(--dim);margin-top:6px">${s.world?'🌍 '+esc(s.world)+' · ':''}${s.updated_at||s.created_at?new Date((s.updated_at||s.created_at)*1000).toLocaleString():'—'}</div>
       <div style="margin-top:8px;display:flex;gap:6px"><button class="btn btn-sm" onclick="ld('${jsq(i)}')">查看</button><button class="btn btn-sm btn-d" onclick="ds('${jsq(i)}')">删除</button></div></div>`).join('')}
   catch(e){el.innerHTML='<div class="loading" style="color:var(--danger)">'+esc(e.message)+'</div>'}}
 
@@ -665,7 +1067,9 @@ function ld(i){const s=_savesData[i];if(!s){tt('存档详情未在列表中，�
 
 async function ds(i){if(!(await uiConfirm('删除该存档？','删除存档')))return;try{await ap('save/delete',{id:i});markLocal('saves_changed');tt('已删除');ls()}catch(e){tt(e.message,'bad')}}
 
-/* ================= 配置（schema 驱动） ================= */
+/* ══════════════════════════════════════════════
+   配置（schema 驱动）
+   ══════════════════════════════════════════════ */
 async function lcfg(){const el=document.getElementById('cf');el.innerHTML='<div class="loading">加载中...</div>';
   try{const c=await ag('config');
     const schema=(c&&c.schema&&typeof c.schema==='object')?c.schema:{};
@@ -741,7 +1145,9 @@ function refreshConfigWorldOptions(){
   sel.innerHTML=opts.join('');sel.value=cur;
 }
 
-/* ================= 渲染脚本 ================= */
+/* ══════════════════════════════════════════════
+   渲染脚本
+   ══════════════════════════════════════════════ */
 function scriptCount(){document.getElementById('sc-count').textContent=_scriptsData.length+' / 50 条'}
 async function lscripts(){const el=document.getElementById('scl');el.innerHTML='<div class="loading">加载中...</div>';
   try{const d=await ag('render-scripts');
@@ -750,7 +1156,7 @@ async function lscripts(){const el=document.getElementById('scl');el.innerHTML='
     if(!_scriptsData.length){el.innerHTML='<div class="loading">暂无渲染脚本，点击右上角「+ 新增脚本」</div>';return}
     el.innerHTML=_scriptsData.map((s,i)=>{
       const on=s.enabled!==false;
-      return '<div class="npc-item"><div class="kv"><strong>#'+(i+1)+' '+esc(s.name||'未命名脚本')+'</strong> <span class="badge" style="'+(on?'background:rgba(62,143,176,0.2);color:var(--good)':'background:rgba(144,140,170,0.15);color:var(--dim)')+'">'+(on?'启用':'停用')+'</span><br><span class="script-regex" title="'+esc(s.find_regex)+'">'+esc(clampText(s.find_regex||'(空)',90))+'</span><br><span class="script-repl">→ '+esc(clampText(s.replace_string||'(删除匹配)',70))+'</span></div>'+
+      return '<div class="item"><div class="kv"><strong>#'+(i+1)+' '+esc(s.name||'未命名脚本')+'</strong> <span class="badge" style="'+(on?'background:rgba(62,143,176,0.2);color:var(--good)':'background:rgba(144,140,170,0.15);color:var(--dim)')+'">'+(on?'启用':'停用')+'</span><br><span class="script-regex" title="'+esc(s.find_regex)+'">'+esc(clampText(s.find_regex||'(空)',90))+'</span><br><span class="script-repl">→ '+esc(clampText(s.replace_string||'(删除匹配)',70))+'</span></div>'+
         '<label class="ckline" style="margin:0" title="切换启用状态"><input type="checkbox" '+(on?'checked':'')+' onchange="toggleScript(\''+jsq(s.id)+'\')"></label>'+
         '<button class="btn btn-sm" onclick="fillTest(\''+jsq(s.id)+'\')">试</button>'+
         '<button class="btn btn-sm" onclick="scriptEdit(\''+jsq(s.id)+'\')">编辑</button>'+
@@ -791,72 +1197,9 @@ async function runScriptTest(){
   catch(e){out.textContent='测试失败：'+e.message;out.hidden=false}
 }
 
-/* ================= 雷达图（保留旧版视觉） ================= */
-function drawRadar(canvas, attrs, charm, luck){
-  const ctx=canvas.getContext('2d'),w=canvas.width=200,h=canvas.height=200,cx=100,cy=100,r=72;
-  const gM={F:0,E:20,D:40,C:60,B:75,A:85,'A+':92,S:100},lb=['力量','敏捷','精神','魅力','幸运'];
-  const raw=[attrs&&attrs.str||5,attrs&&attrs.agi||5,attrs&&attrs.spr||5,gM[charm]||50,gM[luck]||50];
-  function nv(v,i){return i<3?(v>30?0.95+(v-30)/(1000-30)*1.05:v/30*0.95):(v>100?0.95+(v-100)/10*1.05:v/100*0.95)}
-  const vals=raw.map((v,i)=>nv(v,i)),ov=raw.map((v,i)=>i<3?v>30:v>100);
-  const ag=[Math.PI/2,Math.PI/2-2*Math.PI/5,Math.PI/2-4*Math.PI/5,Math.PI/2-6*Math.PI/5,Math.PI/2-8*Math.PI/5];
-  ctx.clearRect(0,0,w,h);
-  for(let i=0;i<5;i++){if(!ov[i])continue;
-    const a=ag[i],ex=cx+vals[i]*r*Math.cos(a),ey=cy-vals[i]*r*Math.sin(a),bx=cx+0.95*r*Math.cos(a),by=cy-0.95*r*Math.sin(a);
-    ctx.save();ctx.shadowColor='rgba(255,215,0,0.5)';ctx.shadowBlur=18;
-    ctx.beginPath();ctx.moveTo(bx,by);ctx.lineTo(ex,ey);
-    ctx.strokeStyle='rgba(255,215,0,0.7)';ctx.lineWidth=3;ctx.stroke();ctx.restore();
-    ctx.beginPath();ctx.arc(ex,ey,5,0,Math.PI*2);
-    ctx.shadowColor='rgba(255,215,0,0.7)';ctx.shadowBlur=20;ctx.fillStyle='#ffd700';ctx.fill();ctx.shadowBlur=0;
-  }
-  for(let k=1;k<=4;k++){ctx.beginPath();const rr=r*k/4;
-    for(let i=0;i<5;i++){const x=cx+rr*Math.cos(ag[i]),y=cy-rr*Math.sin(ag[i]);i?ctx.lineTo(x,y):ctx.moveTo(x,y)}
-    ctx.closePath();ctx.strokeStyle='rgba(45,43,85,0.35)';ctx.lineWidth=1;ctx.stroke();
-  }
-  for(let i=0;i<5;i++){ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(cx+r*Math.cos(ag[i]),cy-r*Math.sin(ag[i]));ctx.strokeStyle='rgba(45,43,85,0.4)';ctx.stroke()}
-  ctx.save();
-  ctx.beginPath();
-  for(let i=0;i<5;i++){const lim=Math.min(vals[i],0.95),x=cx+lim*r*Math.cos(ag[i]),y=cy-lim*r*Math.sin(ag[i]);i?ctx.lineTo(x,y):ctx.moveTo(x,y)}
-  ctx.closePath();
-  let g=ctx.createRadialGradient(cx,cy,0,cx,cy,r);g.addColorStop(0,'rgba(196,167,231,0.45)');g.addColorStop(1,'rgba(156,207,216,0.12)');
-  ctx.fillStyle=g;ctx.fill();ctx.shadowColor='rgba(196,167,231,0.25)';ctx.shadowBlur=8;ctx.strokeStyle='rgba(196,167,231,0.65)';ctx.lineWidth=1.5;ctx.stroke();
-  ctx.restore();
-  for(let i=0;i<5;i++){if(vals[i]<=0.95)continue;
-    const pv=(i+4)%5,nx=(i+1)%5;
-    const b={x:cx+0.95*r*Math.cos(ag[i]),y:cy-0.95*r*Math.sin(ag[i])};
-    const e={x:cx+vals[i]*r*Math.cos(ag[i]),y:cy-vals[i]*r*Math.sin(ag[i])};
-    const lv={x:cx+Math.min(vals[pv],0.95)*r*Math.cos(ag[pv]),y:cy-Math.min(vals[pv],0.95)*r*Math.sin(ag[pv])};
-    const rv={x:cx+Math.min(vals[nx],0.95)*r*Math.cos(ag[nx]),y:cy-Math.min(vals[nx],0.95)*r*Math.sin(ag[nx])};
-    ctx.beginPath();ctx.moveTo(lv.x,lv.y);ctx.lineTo(b.x,b.y);ctx.lineTo(e.x,e.y);ctx.lineTo(rv.x,rv.y);ctx.closePath();
-    ctx.fillStyle='rgba(255,215,0,0.2)';ctx.fill();ctx.strokeStyle='rgba(255,215,0,0.4)';ctx.lineWidth=1;ctx.stroke();
-  }
-  for(let i=0;i<5;i++){const x=cx+vals[i]*r*Math.cos(ag[i]),y=cy-vals[i]*r*Math.sin(ag[i]);
-    ctx.beginPath();ctx.arc(x,y,ov[i]?4.5:3,0,Math.PI*2);
-    ctx.fillStyle=ov[i]?'#ffd700':'#c4a7e7';ctx.shadowColor=ov[i]?'rgba(255,215,0,0.5)':'rgba(196,167,231,0.3)';ctx.shadowBlur=ov[i]?12:6;ctx.fill();ctx.shadowBlur=0;
-    ctx.strokeStyle='#0f0e17';ctx.lineWidth=1.5;ctx.stroke();
-  }
-  for(let i=0;i<5;i++){
-    const a=ag[i];
-    const nx=cx+(r+30)*Math.cos(a),ny=cy-(r+30)*Math.sin(a);
-    const vx=cx+(r+16)*Math.cos(a),vy=cy-(r+16)*Math.sin(a);
-    const right=nx>cx+5,left=nx<cx-5,top=ny<cy-5,bottom=ny>cy+5;
-    ctx.textBaseline='middle';
-    ctx.font='11px sans-serif';
-    ctx.fillStyle='rgba(144,140,170,0.8)';
-    if(right)ctx.textAlign='left';else if(left)ctx.textAlign='right';else ctx.textAlign='center';
-    ctx.fillText(lb[i],nx,ny);
-    ctx.font='bold 13px sans-serif';
-    let d=String(ov[i]?('EX'+raw[i]):(i<3?raw[i]:(i===3?charm:luck)));
-    ctx.fillStyle=ov[i]?'#ffd700':'#c4a7e7';
-    let vOff=0;
-    if(Math.abs(nx-cx)<8)vOff=top?14:-14;
-    else if(Math.abs(ny-cy)<8)vOff=right?-14:14;
-    else vOff=-12;
-    ctx.fillText(d,vx,vy+vOff);
-    ctx.font='11px sans-serif';
-  }
-}
-
-/* ================= 页签切换与启动 ================= */
+/* ══════════════════════════════════════════════
+   页签切换与启动
+   ══════════════════════════════════════════════ */
 document.querySelectorAll('.tab').forEach(t=>{t.onclick=()=>{
   document.querySelectorAll('.tab').forEach(x=>x.classList.remove('act'));
   document.querySelectorAll('.page').forEach(x=>x.classList.remove('act'));
@@ -882,6 +1225,9 @@ async function boot(){
   sseConnect();
   ag('health').catch(()=>tt('后端接口暂未就绪，稍后会自动恢复','bad'));
   lw();lc();ls();lcfg();lscripts();
+  /* 图鉴缓存供角色编辑器下拉使用 */
+  ag('archetypes',{type:'race'}).then(d=>{_archCache.race=entriesOf(d&&d.archetypes?d.archetypes:d)}).catch(()=>{});
+  ag('archetypes',{type:'job'}).then(d=>{_archCache.job=entriesOf(d&&d.archetypes?d.archetypes:d)}).catch(()=>{});
 }
 boot();
 </script>

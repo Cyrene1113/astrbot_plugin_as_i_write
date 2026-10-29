@@ -88,7 +88,7 @@ def _get_character_skills(char: dict) -> tuple[list, list]:
 #  主插件类
 # ════════════════════════════════════════════════
 
-@register(PLUGIN_ID, "昔涟", "📖 如我所书 — 由AI驱动的动态文字冒险游戏", version="1.4.0")
+@register(PLUGIN_ID, "昔涟", "📖 如我所书 — 由AI驱动的动态文字冒险游戏", version="1.5.0")
 class AsIWritePlugin(Star):
     """如我所书 — 翻开书页，故事便开始流淌。"""
 
@@ -104,6 +104,10 @@ class AsIWritePlugin(Star):
         self.lore_content_budget = int(self.config.get("lore_content_budget", 4000))
         self.enable_settle_extract = bool(self.config.get("enable_settle_extract", True))
         self.enable_dice_judgment = bool(self.config.get("enable_dice_judgment", True))
+        try:
+            self.ai_gen_timeout = max(15, int(self.config.get("ai_gen_timeout", 120) or 120))
+        except (TypeError, ValueError):
+            self.ai_gen_timeout = 120
 
         self._characters_path = DATA_DIR / "characters.json"
         self._worlds_path = DATA_DIR / "worlds.json"
@@ -147,7 +151,7 @@ class AsIWritePlugin(Star):
         self._web_api = AsIWriteWebAPI(self)
         self._web_api.register()
 
-        logger.info(f"📖 如我所书 v1.4.0 | 角色卡:{len(self._characters)} 世界观:{len(self._worlds)} 图鉴:{len(self._archetypes)}")
+        logger.info(f"📖 如我所书 v1.5.0 | 角色卡:{len(self._characters)} 世界观:{len(self._worlds)} 图鉴:{len(self._archetypes)}")
 
     def _notify(self, event_type: str, data: dict | None = None) -> None:
         """把聊天侧的数据变更推送给 WebUI（SSE）。"""
